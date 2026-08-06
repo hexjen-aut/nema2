@@ -4,6 +4,7 @@ import Reveal from "@/components/Reveal";
 import TiltCard from "@/components/TiltCard";
 import MagneticButton from "@/components/MagneticButton";
 import Logo from "@/components/Logo";
+import { createClient } from "@/lib/supabase/server";
 
 const collections = [
   { name: "Sacs", desc: "Modèles Skyline, Peachy, Soleya, Atelier — à composer." },
@@ -36,7 +37,14 @@ const testimonials = [
   },
 ];
 
-export default function Home() {
+export default async function Home() {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const accountHref = user ? "/compte/mon-compte" : "/compte/connexion";
+
   return (
     <main className="relative min-h-screen overflow-hidden bg-linen text-ink">
       <CursorGlow />
@@ -51,7 +59,7 @@ export default function Home() {
             <a href="#avis" className="nav-link hover:text-clay">Avis</a>
           </nav>
           <MagneticButton
-            href="/compte/connexion"
+            href={accountHref}
             className="rounded-full border border-ink px-4 py-2 text-sm hover:bg-ink hover:text-linen transition-colors"
           >
             Mon compte
