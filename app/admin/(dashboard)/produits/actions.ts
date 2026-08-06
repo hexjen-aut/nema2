@@ -12,6 +12,35 @@ function slugify(name: string) {
     .replace(/(^-|-$)/g, "");
 }
 
+async function uploadProductImage(
+  supabase: ReturnType<typeof createClient>,
+  productId: string,
+  file: File,
+  position: number
+) {
+  const ext = file.name.split(".").pop() || "jpg";
+  const path = `${productId}/${Date.now()}-${position}.${ext}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from("nema-products")
+    .upload(path, file, { contentType: file.type, upsert: false });
+
+  if (uploadError) {
+    console.error("[uploadProductImage] erreur upload:", uploadError.message);
+    return;
+  }
+
+  const {
+    data: { publicUrl },
+  } = supabase.storage.from("nema-products").getPublicUrl(path);
+
+  await supabase.from("product_images").insert({
+    product_id: productId,
+    url: publicUrl,
+    position,
+  });
+}
+
 export async function createProduct(formData: FormData) {
   const supabase = createClient();
   const name = String(formData.get("name") || "");
@@ -20,15 +49,60 @@ export async function createProduct(formData: FormData) {
   const fabrication_days = Number(formData.get("fabrication_days") || 10);
   const description = String(formData.get("description") || "");
 
-  await supabase.from("products").insert({
-    name,
-    slug: slugify(name) + "-" + Math.random().toString(36).slice(2, 6),
-    category_id,
-    base_price,
-    fabrication_days,
-    description,
-  });
+  const { data: product, error } = await supabase
+    .from("products")
+    .insert({
+      name,
+      slug: slugify(name) + "-" + Math.random().toString(36).slice(2, 6),
+      category_id,
+      base_price,
+      fabrication_days,
+      description,
+    })
+    .select("id")
+    .single();
 
+  if (error || !product) {
+    console.error("[createProduct] erreur création produit:", error?.message);
+    return;
+  }
+
+  const images = formData.getAll("images") as File[];
+  const validImages = images.filter((f) => f && f.size > 0);
+
+  for (let i = 0; i < validImages.length; i++) {
+    await uploadProductImage(supabase, product.id, validImages[i], i);
+  }
+
+  revalidatePath("/admin/produits");
+}
+
+export async function addProductImage(productId: string, formData: FormData) {
+  const supabase = createClient();
+  const file = formData.get("image") as File | null;
+  if (!file || file.size === 0) return;
+
+  const { count } = await supabase
+    .from("product_images")
+    .select("id", { count: "exact", head: true })
+    .eq("product_id", productId);
+
+  await uploadProductImage(supabase, productId, file, count || 0);
+  revalidatePath("/admin/produits");
+}
+
+export async function deleteProductImage(imageId: string, url: string) {
+  const supabase = createClient();
+
+  // Extrait le chemin du fichier dans le bucket à partir de l'URL publique.
+  const marker = "/nema-products/";
+  const idx = url.indexOf(marker);
+  if (idx !== -1) {
+    const path = url.slice(idx + marker.length);
+    await supabase.storage.from("nema-products").remove([path]);
+  }
+
+  await supabase.from("product_images").delete().eq("id", imageId);
   revalidatePath("/admin/produits");
 }
 
