@@ -54,7 +54,7 @@ export default async function Home() {
           <Logo />
           <nav className="hidden gap-8 text-sm md:flex">
             <a href="/collections" className="nav-link hover:text-clay">Collections</a>
-            <a href="#personnaliser" className="nav-link hover:text-clay">Personnaliser</a>
+            <a href="/personnaliser" className="nav-link hover:text-clay">Personnaliser</a>
             <a href="#histoire" className="nav-link hover:text-clay">Notre histoire</a>
             <a href="#avis" className="nav-link hover:text-clay">Avis</a>
           </nav>
@@ -168,7 +168,7 @@ export default async function Home() {
             ))}
           </div>
           <MagneticButton
-            href="/collections"
+            href="/personnaliser"
             className="mt-8 inline-block rounded-full bg-clay px-6 py-3 text-sm text-card hover:bg-ink transition-colors"
           >
             Commencer ma personnalisation
