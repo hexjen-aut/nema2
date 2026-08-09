@@ -41,8 +41,18 @@ export default async function MesCommandesPage() {
 
   return (
     <div className="mx-auto max-w-wrap px-6 py-12">
-      <h1 className="font-display text-3xl">Mes commandes</h1>
-      <p className="mt-1 text-sm text-ink/60">Suivez l'avancement de vos créations.</p>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 className="font-display text-3xl">Mes commandes</h1>
+          <p className="mt-1 text-sm text-ink/60">Suivez l'avancement de vos créations.</p>
+        </div>
+        <Link
+          href="/personnaliser"
+          className="rounded-full bg-clay px-6 py-2.5 text-sm text-card hover:bg-ink transition-colors"
+        >
+          Personnaliser une nouvelle pièce
+        </Link>
+      </div>
 
       <div className="mt-8 space-y-5">
         {(orders || []).map((o: any) => {
