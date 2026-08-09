@@ -53,7 +53,7 @@ export default async function Home() {
         <div className="mx-auto flex max-w-wrap items-center justify-between px-6 py-4">
           <Logo />
           <nav className="hidden gap-8 text-sm md:flex">
-            <a href="#collections" className="nav-link hover:text-clay">Collections</a>
+            <a href="/collections" className="nav-link hover:text-clay">Collections</a>
             <a href="#personnaliser" className="nav-link hover:text-clay">Personnaliser</a>
             <a href="#histoire" className="nav-link hover:text-clay">Notre histoire</a>
             <a href="#avis" className="nav-link hover:text-clay">Avis</a>
@@ -79,7 +79,7 @@ export default async function Home() {
           </p>
           <div className="mt-8 flex flex-wrap gap-4">
             <MagneticButton
-              href="#collections"
+              href="/collections"
               className="rounded-full bg-clay px-6 py-3 text-sm text-card hover:bg-ink transition-colors"
             >
               Découvrir la collection
@@ -126,14 +126,22 @@ export default async function Home() {
         <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {collections.map((c, i) => (
             <Reveal key={c.name} delay={i * 100}>
-              <TiltCard className="group rounded-2xl border border-ink/10 bg-card p-6 hover:border-clay hover:shadow-xl">
-                <div className="mb-4 aspect-square rounded-xl bg-linen transition-transform duration-300 group-hover:scale-[1.03]" />
-                <p className="font-display text-xl">{c.name}</p>
-                <p className="mt-1 text-sm text-ink/60">{c.desc}</p>
-              </TiltCard>
+              <a href="/collections">
+                <TiltCard className="group rounded-2xl border border-ink/10 bg-card p-6 hover:border-clay hover:shadow-xl">
+                  <div className="mb-4 aspect-square rounded-xl bg-linen transition-transform duration-300 group-hover:scale-[1.03]" />
+                  <p className="font-display text-xl">{c.name}</p>
+                  <p className="mt-1 text-sm text-ink/60">{c.desc}</p>
+                </TiltCard>
+              </a>
             </Reveal>
           ))}
         </div>
+        <MagneticButton
+          href="/collections"
+          className="mt-10 inline-block rounded-full border border-ink px-6 py-3 text-sm hover:bg-ink hover:text-linen transition-colors"
+        >
+          Voir toutes les collections
+        </MagneticButton>
       </section>
 
       <div className="relative z-10 mx-auto max-w-wrap px-6">
@@ -160,7 +168,7 @@ export default async function Home() {
             ))}
           </div>
           <MagneticButton
-            href="#collections"
+            href="/collections"
             className="mt-8 inline-block rounded-full bg-clay px-6 py-3 text-sm text-card hover:bg-ink transition-colors"
           >
             Commencer ma personnalisation
