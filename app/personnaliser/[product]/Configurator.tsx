@@ -127,8 +127,8 @@ export default function Configurator({ product }: { product: Product }) {
 
   return (
     <div className="mx-auto max-w-wrap px-6 py-10">
-      <Link href="/" className="text-sm text-ink/50 hover:text-clay transition-colors">
-        ← Retour à la boutique
+      <Link href="/personnaliser" className="text-sm text-ink/50 hover:text-clay transition-colors">
+        ← Retour aux modèles
       </Link>
 
       <h1 className="mt-3 font-display text-3xl">{product.name}</h1>
