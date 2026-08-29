@@ -74,7 +74,28 @@ export async function createProduct(formData: FormData) {
     await uploadProductImage(supabase, product.id, validImages[i], i);
   }
 
+  // Tailles saisies dans le formulaire de création (optionnel, jusqu'à 4 lignes).
+  const sizeNames = formData.getAll("size_name") as string[];
+  const sizeDeltas = formData.getAll("size_delta") as string[];
+
+  const sizesToInsert = sizeNames
+    .map((rawName, i) => ({
+      product_id: product.id,
+      name: rawName.trim(),
+      price_delta: Number(sizeDeltas[i] || 0),
+      position: i,
+    }))
+    .filter((s) => s.name.length > 0);
+
+  if (sizesToInsert.length > 0) {
+    const { error: sizesError } = await supabase.from("product_sizes").insert(sizesToInsert);
+    if (sizesError) {
+      console.error("[createProduct] erreur tailles:", sizesError.message);
+    }
+  }
+
   revalidatePath("/admin/produits");
+  revalidatePath("/admin/prix");
 }
 
 export async function addProductImage(productId: string, formData: FormData) {
@@ -94,7 +115,6 @@ export async function addProductImage(productId: string, formData: FormData) {
 export async function deleteProductImage(imageId: string, url: string) {
   const supabase = createClient();
 
-  // Extrait le chemin du fichier dans le bucket à partir de l'URL publique.
   const marker = "/nema-products/";
   const idx = url.indexOf(marker);
   if (idx !== -1) {
