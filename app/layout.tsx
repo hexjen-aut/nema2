@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Fraunces, Work_Sans } from "next/font/google";
+import ScrollYarnProgress from "@/components/ScrollYarnProgress";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -29,6 +30,7 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <body className={`${fraunces.variable} ${workSans.variable} font-body`}>
+        <ScrollYarnProgress />
         {children}
       </body>
     </html>
