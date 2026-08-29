@@ -14,7 +14,7 @@ export default async function ProduitsPage() {
     supabase
       .from("products")
       .select(
-        "id, name, base_price, fabrication_days, is_active, categories(name), product_images(id, url, position)"
+        "id, name, base_price, fabrication_days, is_active, categories(name), product_images(id, url, position), product_sizes(id, name, price_delta)"
       )
       .order("created_at", { ascending: false }),
     supabase.from("categories").select("id, name").order("name"),
@@ -83,6 +83,38 @@ export default async function ProduitsPage() {
             className="mt-1 w-full rounded-lg border border-ink/15 bg-linen px-3 py-2 text-sm"
           />
         </div>
+
+        {/* Tailles (optionnel à la création, jusqu'à 4 — modifiable ensuite dans /admin/prix) */}
+        <div className="col-span-full">
+          <label className="text-sm text-ink/70">
+            Tailles proposées (optionnel — laisse vide si taille unique)
+          </label>
+          <div className="mt-2 grid gap-2 sm:grid-cols-2 md:grid-cols-4">
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} className="flex items-center gap-2">
+                <input
+                  name="size_name"
+                  placeholder={
+                    i === 0 ? "Petit" : i === 1 ? "Moyen" : i === 2 ? "Grand" : "Taille"
+                  }
+                  className="w-1/2 rounded-lg border border-ink/15 bg-linen px-2 py-1.5 text-sm"
+                />
+                <input
+                  name="size_delta"
+                  type="number"
+                  step="0.01"
+                  placeholder="+DH"
+                  defaultValue={0}
+                  className="w-1/2 rounded-lg border border-ink/15 bg-linen px-2 py-1.5 text-sm"
+                />
+              </div>
+            ))}
+          </div>
+          <p className="mt-1 text-xs text-ink/40">
+            Laisse le nom vide pour ignorer une ligne. D'autres tailles peuvent être
+            ajoutées plus tard depuis l'onglet Prix.
+          </p>
+        </div>
       </form>
 
       <div className="mt-6 overflow-x-auto rounded-2xl border border-ink/10 bg-card">
@@ -93,6 +125,7 @@ export default async function ProduitsPage() {
               <th className="px-4 py-3">Modèle</th>
               <th className="px-4 py-3">Catégorie</th>
               <th className="px-4 py-3">Prix base</th>
+              <th className="px-4 py-3">Tailles</th>
               <th className="px-4 py-3">Délai</th>
               <th className="px-4 py-3">Statut</th>
               <th className="px-4 py-3"></th>
@@ -159,6 +192,22 @@ export default async function ProduitsPage() {
                   <td className="px-4 py-3">{p.name}</td>
                   <td className="px-4 py-3 text-ink/60">{p.categories?.name || "—"}</td>
                   <td className="px-4 py-3">{Number(p.base_price).toFixed(0)} DH</td>
+                  <td className="px-4 py-3 text-ink/60">
+                    {(p.product_sizes || []).length > 0 ? (
+                      <ul className="space-y-0.5">
+                        {p.product_sizes.map((s: any) => (
+                          <li key={s.id}>
+                            {s.name}
+                            {Number(s.price_delta) > 0
+                              ? ` (+${Number(s.price_delta).toFixed(0)} DH)`
+                              : ""}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <span className="text-ink/40">Taille unique</span>
+                    )}
+                  </td>
                   <td className="px-4 py-3 text-ink/60">{p.fabrication_days} j</td>
                   <td className="px-4 py-3">
                     <form action={toggleProductActive.bind(null, p.id, !p.is_active)}>
@@ -189,7 +238,7 @@ export default async function ProduitsPage() {
             })}
             {(products || []).length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-6 text-center text-ink/40">
+                <td colSpan={8} className="px-4 py-6 text-center text-ink/40">
                   Aucun produit pour le moment.
                 </td>
               </tr>
