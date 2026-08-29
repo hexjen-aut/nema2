@@ -5,9 +5,9 @@ import { createClient } from "@/lib/supabase/server";
 
 type SubmitOrderInput = {
   productId: string;
+  materialId: string | null;
+  materialColorId: string | null;
   sizeId: string | null;
-  primaryColorId: string | null;
-  secondaryColorId: string | null;
   optionIds: string[];
   totalPrice: number;
   quantity: number;
@@ -30,23 +30,30 @@ export async function submitOrder(input: SubmitOrderInput) {
 
   if (!user) redirect("/compte/connexion");
 
+  if (!input.materialId || !input.materialColorId) {
+    return { error: "Veuillez choisir un fil et une couleur avant de valider." };
+  }
+
   // 1. Enregistre la personnalisation
+  // status: 'validated' correspond à la contrainte réelle sur nema.customizations
+  // ('draft' | 'previewed' | 'validated').
   const { data: customization, error: customError } = await supabase
     .from("customizations")
     .insert({
       user_id: user.id,
       product_id: input.productId,
+      material_id: input.materialId,
+      material_color_id: input.materialColorId,
       size_id: input.sizeId,
-      primary_color_id: input.primaryColorId,
-      secondary_color_id: input.secondaryColorId,
       selected_option_ids: input.optionIds,
       total_price: input.totalPrice,
-      status: "validee",
+      status: input.generatedImageUrl ? "previewed" : "validated",
     })
     .select("id")
     .single();
 
   if (customError || !customization) {
+    console.error("[submitOrder] erreur customization:", customError?.message);
     return { error: "Impossible d'enregistrer la personnalisation." };
   }
 
@@ -57,6 +64,11 @@ export async function submitOrder(input: SubmitOrderInput) {
       image_url: input.generatedImageUrl,
       is_validated: true,
     });
+
+    await supabase
+      .from("customizations")
+      .update({ status: "validated" })
+      .eq("id", customization.id);
   }
 
   // 3. Adresse de livraison
@@ -74,6 +86,7 @@ export async function submitOrder(input: SubmitOrderInput) {
     .single();
 
   if (addressError || !address) {
+    console.error("[submitOrder] erreur address:", addressError?.message);
     return { error: "Impossible d'enregistrer l'adresse de livraison." };
   }
 
@@ -97,6 +110,7 @@ export async function submitOrder(input: SubmitOrderInput) {
     .single();
 
   if (orderError || !order) {
+    console.error("[submitOrder] erreur order:", orderError?.message);
     return { error: "Impossible de créer la commande." };
   }
 
@@ -110,6 +124,7 @@ export async function submitOrder(input: SubmitOrderInput) {
   });
 
   if (itemError) {
+    console.error("[submitOrder] erreur order_items:", itemError.message);
     return { error: "Impossible d'ajouter l'article à la commande." };
   }
 
