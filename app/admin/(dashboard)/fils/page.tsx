@@ -166,12 +166,14 @@ export default async function FilsPage() {
                       </span>
                       <div className="text-xs">
                         <p>{c.name}</p>
-                        <form action={updateMaterialColorStock.bind(null, c.id)}>
+                        <form
+                          action={updateMaterialColorStock.bind(null, c.id)}
+                          className="mt-0.5 flex items-center gap-1"
+                        >
                           <select
                             name="stock_status"
                             defaultValue={c.stock_status}
-                            onChange={(e) => e.currentTarget.form?.requestSubmit()}
-                            className="mt-0.5 rounded border border-ink/10 bg-card px-1 py-0.5 text-[10px] text-ink/60"
+                            className="rounded border border-ink/10 bg-card px-1 py-0.5 text-[10px] text-ink/60"
                           >
                             {Object.entries(STOCK_LABELS).map(([value, label]) => (
                               <option key={value} value={value}>
@@ -179,6 +181,12 @@ export default async function FilsPage() {
                               </option>
                             ))}
                           </select>
+                          <button
+                            type="submit"
+                            className="rounded border border-ink/15 px-1.5 py-0.5 text-[10px] text-ink/50 hover:border-clay hover:text-clay"
+                          >
+                            OK
+                          </button>
                         </form>
                       </div>
                       <form action={deleteMaterialColor.bind(null, c.id)}>
