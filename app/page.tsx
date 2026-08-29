@@ -1,3 +1,4 @@
+import Link from "next/link";
 import ChainDivider from "@/components/ChainDivider";
 import CursorGlow from "@/components/CursorGlow";
 import Reveal from "@/components/Reveal";
@@ -43,6 +44,12 @@ export default async function Home() {
     data: { user },
   } = await supabase.auth.getUser();
 
+  const { data: products } = await supabase
+    .from("products")
+    .select("id, name, base_price, categories(name), product_images(url, position)")
+    .eq("is_active", true)
+    .order("created_at", { ascending: false });
+
   const accountHref = user ? "/compte/mon-compte" : "/compte/connexion";
 
   return (
@@ -53,8 +60,9 @@ export default async function Home() {
         <div className="mx-auto flex max-w-wrap items-center justify-between px-6 py-4">
           <Logo />
           <nav className="hidden gap-8 text-sm md:flex">
-            <a href="/collections" className="nav-link hover:text-clay">Collections</a>
-            <a href="/personnaliser" className="nav-link hover:text-clay">Personnaliser</a>
+            <a href="#collections" className="nav-link hover:text-clay">Collections</a>
+            <a href="#produits" className="nav-link hover:text-clay">Nos créations</a>
+            <a href="#personnaliser" className="nav-link hover:text-clay">Personnaliser</a>
             <a href="#histoire" className="nav-link hover:text-clay">Notre histoire</a>
             <a href="#avis" className="nav-link hover:text-clay">Avis</a>
           </nav>
@@ -79,7 +87,7 @@ export default async function Home() {
           </p>
           <div className="mt-8 flex flex-wrap gap-4">
             <MagneticButton
-              href="/collections"
+              href="#produits"
               className="rounded-full bg-clay px-6 py-3 text-sm text-card hover:bg-ink transition-colors"
             >
               Découvrir la collection
@@ -125,27 +133,81 @@ export default async function Home() {
         </Reveal>
         <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {collections.map((c, i) => (
-            <Reveal key={c.name} delay={i * 100}>
-              <a href="/collections">
-                <TiltCard className="group rounded-2xl border border-ink/10 bg-card p-6 hover:border-clay hover:shadow-xl">
-                  <div className="mb-4 aspect-square rounded-xl bg-linen transition-transform duration-300 group-hover:scale-[1.03]" />
-                  <p className="font-display text-xl">{c.name}</p>
-                  <p className="mt-1 text-sm text-ink/60">{c.desc}</p>
-                </TiltCard>
-              </a>
+            <Reveal key={c.name} delay={i * 100} direction={i % 2 === 0 ? "left" : "right"}>
+              <TiltCard className="group rounded-2xl border border-ink/10 bg-card p-6 hover:border-clay hover:shadow-xl">
+                <div className="mb-4 aspect-square rounded-xl bg-linen transition-transform duration-300 group-hover:scale-[1.03]" />
+                <p className="font-display text-xl">{c.name}</p>
+                <p className="mt-1 text-sm text-ink/60">{c.desc}</p>
+              </TiltCard>
             </Reveal>
           ))}
         </div>
-        <MagneticButton
-          href="/collections"
-          className="mt-10 inline-block rounded-full border border-ink px-6 py-3 text-sm hover:bg-ink hover:text-linen transition-colors"
-        >
-          Voir toutes les collections
-        </MagneticButton>
       </section>
 
       <div className="relative z-10 mx-auto max-w-wrap px-6">
         <ChainDivider color="#5F6B4A" />
+      </div>
+
+      {/* Nos créations — produits réels tirés de la base */}
+      <section id="produits" className="relative z-10 mx-auto max-w-wrap px-6 py-20">
+        <Reveal>
+          <h2 className="font-display text-3xl">Nos créations</h2>
+          <p className="mt-2 max-w-lg text-ink/70">
+            Nos modèles disponibles à la personnalisation, dès aujourd'hui.
+          </p>
+        </Reveal>
+
+        <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {(products || []).map((p: any, i: number) => {
+            const image = [...(p.product_images || [])].sort(
+              (a: any, b: any) => a.position - b.position
+            )[0]?.url;
+
+            return (
+              <Reveal key={p.id} delay={i * 80} direction="scale">
+                <TiltCard className="group overflow-hidden rounded-2xl border border-ink/10 bg-card hover:border-clay hover:shadow-xl">
+                  <div className="aspect-square overflow-hidden bg-linen">
+                    {image ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={image}
+                        alt={p.name}
+                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center text-sm text-ink/40">
+                        Pas de photo
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-5">
+                    <p className="text-xs text-ink/50">{p.categories?.name || "Nema"}</p>
+                    <p className="font-display text-xl">{p.name}</p>
+                    <p className="mt-1 text-sm text-ink/60">
+                      À partir de {Number(p.base_price).toFixed(0)} DH
+                    </p>
+                    <Link
+                      href={`/personnaliser/${p.id}`}
+                      className="mt-4 inline-block rounded-full bg-clay px-5 py-2 text-sm text-card hover:bg-ink transition-colors"
+                    >
+                      Personnaliser
+                    </Link>
+                  </div>
+                </TiltCard>
+              </Reveal>
+            );
+          })}
+
+          {(products || []).length === 0 && (
+            <p className="col-span-full rounded-2xl border border-ink/10 bg-card p-8 text-center text-sm text-ink/40">
+              Aucun produit disponible pour le moment.
+            </p>
+          )}
+        </div>
+      </section>
+
+      <div className="relative z-10 mx-auto max-w-wrap px-6">
+        <ChainDivider />
       </div>
 
       <section id="personnaliser" className="relative z-10 bg-card py-20">
@@ -168,7 +230,7 @@ export default async function Home() {
             ))}
           </div>
           <MagneticButton
-            href="/personnaliser"
+            href="#produits"
             className="mt-8 inline-block rounded-full bg-clay px-6 py-3 text-sm text-card hover:bg-ink transition-colors"
           >
             Commencer ma personnalisation
