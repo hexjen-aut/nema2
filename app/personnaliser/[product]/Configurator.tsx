@@ -213,9 +213,9 @@ export default function Configurator({ product }: { product: Product }) {
         {STEP_LABELS.map((label, i) => (
           <div key={label} className="flex flex-1 flex-col items-center gap-1">
             <div
-              className={`h-1.5 w-full rounded-full ${
+              className={`h-1.5 w-full origin-bottom rounded-full transition-colors duration-500 ${
                 i <= step ? "bg-clay" : "bg-ink/10"
-              }`}
+              } ${i === step ? "step-dot-active" : ""}`}
             />
             <span
               className={`hidden text-[10px] sm:block ${
@@ -229,7 +229,7 @@ export default function Configurator({ product }: { product: Product }) {
       </div>
 
       <div className="mt-8 grid gap-8 md:grid-cols-[1fr_320px]">
-        <div className="rounded-2xl border border-ink/10 bg-card p-6">
+        <div key={step} className="step-enter rounded-2xl border border-ink/10 bg-card p-6">
           {step === 0 && (
             <div>
               <p className="font-display text-xl">Modèle</p>
