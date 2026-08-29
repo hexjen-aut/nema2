@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { submitOrder } from "./actions";
+import { createClient as createClientBrowser } from "@/lib/supabase/client";
 
 type MaterialColor = {
   id: string;
@@ -144,25 +145,28 @@ export default function Configurator({ product }: { product: Product }) {
   async function handleGeneratePreview() {
     setGenerating(true);
     setGenerationError(null);
+
     try {
-      const res = await fetch("/api/generate-preview", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          productId: product.id,
-          materialId: selectedMaterial?.id,
-          materialColorId: selectedColor?.id,
-        }),
+      const supabase = createClientBrowser();
+      const { data, error } = await supabase.functions.invoke("generate-preview", {
+        body: {
+          productName: product.name,
+          sizeName: selectedSize?.name ?? null,
+          primaryColorName: selectedColor?.name ?? null,
+          optionNames: selectedOptions.map((o) => o.name),
+        },
       });
-      const data = await res.json();
-      if (!res.ok || !data?.imageUrl) {
-        throw new Error(data?.error || "Échec de la génération.");
+
+      if (error || !data?.imageUrl) {
+        setGenerationError("Échec de la génération. Réessayez.");
+        setGenerating(false);
+        return;
       }
+
       setGeneratedImageUrl(data.imageUrl);
     } catch (err) {
-      setGenerationError(
-        err instanceof Error ? err.message : "Une erreur est survenue."
-      );
+      console.error("[APERCU IA] erreur:", err);
+      setGenerationError("Erreur inattendue lors de la génération.");
     } finally {
       setGenerating(false);
     }
@@ -470,7 +474,7 @@ export default function Configurator({ product }: { product: Product }) {
               </div>
 
               {generationError && (
-                <p className="mt-3 text-sm text-red-700">{generationError}</p>
+                <p className="mt-4 text-sm text-red-700">{generationError}</p>
               )}
 
               <button
