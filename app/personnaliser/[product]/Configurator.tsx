@@ -4,8 +4,24 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { submitOrder } from "./actions";
 
+type MaterialColor = {
+  id: string;
+  name: string;
+  hex: string | null;
+  swatch_image_url: string | null;
+  stock_status: "available" | "low_stock" | "unavailable";
+};
+type Material = {
+  id: string;
+  name: string;
+  slug: string;
+  price_delta: number;
+  texture_image_url: string | null;
+  is_available: boolean;
+  material_colors: MaterialColor[];
+};
+type ProductMaterial = { is_default: boolean; materials: Material };
 type ProductSize = { id: string; name: string; price_delta: number; position: number };
-type ProductColor = { id: string; name: string; hex: string; is_available: boolean };
 type ProductOption = {
   id: string;
   name: string;
@@ -22,14 +38,16 @@ type Product = {
   categories: { name: string } | null;
   product_images: { url: string; position: number }[];
   product_sizes: ProductSize[];
-  product_colors: ProductColor[];
   product_options: ProductOption[];
+  product_materials: ProductMaterial[];
 };
 
+// Étape "Taille" retirée du flux principal si le produit n'en propose pas.
 const STEP_LABELS = [
   "Modèle",
+  "Fil",
+  "Couleur",
   "Taille",
-  "Couleurs",
   "Options",
   "Résumé",
   "Aperçu IA",
@@ -39,17 +57,46 @@ const STEP_LABELS = [
 export default function Configurator({ product }: { product: Product }) {
   const [step, setStep] = useState(0);
 
+  // Ne garde que les fils réellement proposés pour ce produit et disponibles.
+  const availableMaterials = useMemo(
+    () =>
+      product.product_materials
+        .map((pm) => pm.materials)
+        .filter((m) => m && m.is_available),
+    [product.product_materials]
+  );
+
+  const defaultMaterial =
+    product.product_materials.find((pm) => pm.is_default)?.materials ??
+    availableMaterials[0] ??
+    null;
+
+  const [materialId, setMaterialId] = useState<string | null>(
+    defaultMaterial?.id ?? null
+  );
+  const selectedMaterial = availableMaterials.find((m) => m.id === materialId) ?? null;
+
+  // La liste des couleurs dépend TOUJOURS du fil sélectionné.
+  const availableColors = useMemo(
+    () =>
+      (selectedMaterial?.material_colors ?? []).filter(
+        (c) => c.stock_status !== "unavailable"
+      ),
+    [selectedMaterial]
+  );
+
+  const [materialColorId, setMaterialColorId] = useState<string | null>(null);
+
   const [sizeId, setSizeId] = useState<string | null>(
     product.product_sizes[0]?.id ?? null
   );
-  const [primaryColorId, setPrimaryColorId] = useState<string | null>(null);
-  const [secondaryColorId, setSecondaryColorId] = useState<string | null>(null);
   const [optionIds, setOptionIds] = useState<string[]>([]);
   const [quantity, setQuantity] = useState(1);
   const [comments, setComments] = useState("");
 
   const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
+  const [generationError, setGenerationError] = useState<string | null>(null);
 
   const [addressLabel, setAddressLabel] = useState("Domicile");
   const [addressLine, setAddressLine] = useState("");
@@ -59,17 +106,19 @@ export default function Configurator({ product }: { product: Product }) {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const availableColors = product.product_colors.filter((c) => c.is_available);
   const availableOptions = product.product_options.filter((o) => o.is_available);
-
   const selectedSize = product.product_sizes.find((s) => s.id === sizeId);
   const selectedOptions = availableOptions.filter((o) => optionIds.includes(o.id));
+  const selectedColor = availableColors.find((c) => c.id === materialColorId);
+
+  const hasSizes = product.product_sizes.length > 0;
 
   const unitPrice = useMemo(() => {
+    const materialDelta = Number(selectedMaterial?.price_delta || 0);
     const sizeDelta = Number(selectedSize?.price_delta || 0);
     const optionsTotal = selectedOptions.reduce((sum, o) => sum + Number(o.price), 0);
-    return Number(product.base_price) + sizeDelta + optionsTotal;
-  }, [product.base_price, selectedSize, selectedOptions]);
+    return Number(product.base_price) + materialDelta + sizeDelta + optionsTotal;
+  }, [product.base_price, selectedMaterial, selectedSize, selectedOptions]);
 
   const totalPrice = unitPrice * quantity;
 
@@ -79,21 +128,44 @@ export default function Configurator({ product }: { product: Product }) {
     );
   }
 
+  function handleSelectMaterial(id: string) {
+    setMaterialId(id);
+    // On réinitialise la couleur : la palette change avec le fil.
+    setMaterialColorId(null);
+  }
+
   function canGoNext(): boolean {
-    if (step === 1) return Boolean(sizeId);
-    if (step === 2) return Boolean(primaryColorId);
+    if (step === 1) return Boolean(materialId);
+    if (step === 2) return Boolean(materialColorId);
+    if (step === 3 && hasSizes) return Boolean(sizeId);
     return true;
   }
 
   async function handleGeneratePreview() {
     setGenerating(true);
-    // NOTE: branchez ici votre service de génération d'image IA (ex: appel à une
-    // Edge Function Supabase ou une API externe). En attendant, on utilise la
-    // première photo du produit comme aperçu de secours.
-    await new Promise((r) => setTimeout(r, 1200));
-    const fallback = product.product_images[0]?.url ?? null;
-    setGeneratedImageUrl(fallback);
-    setGenerating(false);
+    setGenerationError(null);
+    try {
+      const res = await fetch("/api/generate-preview", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productId: product.id,
+          materialId: selectedMaterial?.id,
+          materialColorId: selectedColor?.id,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data?.imageUrl) {
+        throw new Error(data?.error || "Échec de la génération.");
+      }
+      setGeneratedImageUrl(data.imageUrl);
+    } catch (err) {
+      setGenerationError(
+        err instanceof Error ? err.message : "Une erreur est survenue."
+      );
+    } finally {
+      setGenerating(false);
+    }
   }
 
   async function handleSubmit() {
@@ -102,9 +174,9 @@ export default function Configurator({ product }: { product: Product }) {
 
     const result = await submitOrder({
       productId: product.id,
+      materialId,
+      materialColorId,
       sizeId,
-      primaryColorId,
-      secondaryColorId,
       optionIds,
       totalPrice: unitPrice,
       quantity,
@@ -122,13 +194,14 @@ export default function Configurator({ product }: { product: Product }) {
       setSubmitError(result.error);
       setSubmitting(false);
     }
-    // en cas de succès, submitOrder redirige côté serveur vers /mes-commandes
   }
+
+  const lastStepIndex = STEP_LABELS.length - 1;
 
   return (
     <div className="mx-auto max-w-wrap px-6 py-10">
-      <Link href="/personnaliser" className="text-sm text-ink/50 hover:text-clay transition-colors">
-        ← Retour aux modèles
+      <Link href="/" className="text-sm text-ink/50 hover:text-clay transition-colors">
+        ← Retour à la boutique
       </Link>
 
       <h1 className="mt-3 font-display text-3xl">{product.name}</h1>
@@ -136,7 +209,6 @@ export default function Configurator({ product }: { product: Product }) {
         {product.categories?.name} · Livraison en {product.fabrication_days} jours
       </p>
 
-      {/* Barre d'étapes */}
       <div className="mt-8 flex items-center gap-1">
         {STEP_LABELS.map((label, i) => (
           <div key={label} className="flex flex-1 flex-col items-center gap-1">
@@ -157,7 +229,6 @@ export default function Configurator({ product }: { product: Product }) {
       </div>
 
       <div className="mt-8 grid gap-8 md:grid-cols-[1fr_320px]">
-        {/* Contenu de l'étape */}
         <div className="rounded-2xl border border-ink/10 bg-card p-6">
           {step === 0 && (
             <div>
@@ -184,29 +255,44 @@ export default function Configurator({ product }: { product: Product }) {
 
           {step === 1 && (
             <div>
-              <p className="font-display text-xl">Choisissez une taille</p>
+              <p className="font-display text-xl">Choisissez le fil</p>
+              <p className="mt-1 text-sm text-ink/60">
+                Le fil détermine le rendu, le toucher et le prix final.
+              </p>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                {product.product_sizes.map((s) => (
+                {availableMaterials.map((m) => (
                   <button
-                    key={s.id}
+                    key={m.id}
                     type="button"
-                    onClick={() => setSizeId(s.id)}
-                    className={`rounded-xl border p-4 text-left transition-colors ${
-                      sizeId === s.id
+                    onClick={() => handleSelectMaterial(m.id)}
+                    className={`flex items-center gap-3 rounded-xl border p-4 text-left transition-colors ${
+                      materialId === m.id
                         ? "border-clay bg-clay/10"
                         : "border-ink/10 hover:border-clay/50"
                     }`}
                   >
-                    <p className="font-display text-lg">{s.name}</p>
-                    <p className="text-sm text-ink/60">
-                      {s.price_delta > 0
-                        ? `+${Number(s.price_delta).toFixed(0)} DH`
-                        : "Inclus dans le prix de base"}
-                    </p>
+                    {m.texture_image_url && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={m.texture_image_url}
+                        alt=""
+                        className="h-12 w-12 shrink-0 rounded-lg object-cover"
+                      />
+                    )}
+                    <div>
+                      <p className="font-display">{m.name}</p>
+                      <p className="text-sm text-ink/60">
+                        {m.price_delta > 0
+                          ? `+${Number(m.price_delta).toFixed(0)} DH`
+                          : "Inclus dans le prix de base"}
+                      </p>
+                    </div>
                   </button>
                 ))}
-                {product.product_sizes.length === 0 && (
-                  <p className="text-sm text-ink/50">Aucune taille configurée.</p>
+                {availableMaterials.length === 0 && (
+                  <p className="text-sm text-ink/50">
+                    Aucun fil configuré pour ce modèle pour le moment.
+                  </p>
                 )}
               </div>
             </div>
@@ -214,69 +300,84 @@ export default function Configurator({ product }: { product: Product }) {
 
           {step === 2 && (
             <div>
-              <p className="font-display text-xl">Couleurs</p>
-              <p className="mt-1 text-sm text-ink/60">Couleur principale (obligatoire)</p>
-              <div className="mt-3 flex flex-wrap gap-3">
+              <p className="font-display text-xl">Couleur</p>
+              <p className="mt-1 text-sm text-ink/60">
+                Couleurs disponibles pour le fil « {selectedMaterial?.name} »
+              </p>
+              <div className="mt-4 flex flex-wrap gap-4">
                 {availableColors.map((c) => (
                   <button
                     key={c.id}
                     type="button"
-                    onClick={() => setPrimaryColorId(c.id)}
+                    onClick={() => setMaterialColorId(c.id)}
                     className="flex flex-col items-center gap-1"
                   >
                     <span
-                      className={`h-10 w-10 rounded-full border-2 transition-all ${
-                        primaryColorId === c.id
+                      className={`relative h-12 w-12 overflow-hidden rounded-full border-2 transition-all ${
+                        materialColorId === c.id
                           ? "border-clay scale-110"
                           : "border-ink/10"
                       }`}
                       style={{ backgroundColor: c.hex || "#eee" }}
-                    />
+                    >
+                      {c.swatch_image_url && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={c.swatch_image_url}
+                          alt=""
+                          className="h-full w-full object-cover"
+                        />
+                      )}
+                    </span>
                     <span className="text-xs text-ink/60">{c.name}</span>
+                    {c.stock_status === "low_stock" && (
+                      <span className="text-[10px] text-gold">Stock limité</span>
+                    )}
                   </button>
                 ))}
-              </div>
-
-              <p className="mt-6 text-sm text-ink/60">
-                Couleur secondaire (optionnelle)
-              </p>
-              <div className="mt-3 flex flex-wrap gap-3">
-                <button
-                  type="button"
-                  onClick={() => setSecondaryColorId(null)}
-                  className={`flex h-10 w-10 items-center justify-center rounded-full border-2 text-xs ${
-                    secondaryColorId === null
-                      ? "border-clay"
-                      : "border-ink/10 text-ink/40"
-                  }`}
-                >
-                  Aucune
-                </button>
-                {availableColors
-                  .filter((c) => c.id !== primaryColorId)
-                  .map((c) => (
-                    <button
-                      key={c.id}
-                      type="button"
-                      onClick={() => setSecondaryColorId(c.id)}
-                      className="flex flex-col items-center gap-1"
-                    >
-                      <span
-                        className={`h-10 w-10 rounded-full border-2 transition-all ${
-                          secondaryColorId === c.id
-                            ? "border-clay scale-110"
-                            : "border-ink/10"
-                        }`}
-                        style={{ backgroundColor: c.hex || "#eee" }}
-                      />
-                      <span className="text-xs text-ink/60">{c.name}</span>
-                    </button>
-                  ))}
+                {availableColors.length === 0 && (
+                  <p className="text-sm text-ink/50">
+                    Aucune couleur disponible pour ce fil actuellement.
+                  </p>
+                )}
               </div>
             </div>
           )}
 
           {step === 3 && (
+            <div>
+              <p className="font-display text-xl">Choisissez une taille</p>
+              {hasSizes ? (
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  {product.product_sizes.map((s) => (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => setSizeId(s.id)}
+                      className={`rounded-xl border p-4 text-left transition-colors ${
+                        sizeId === s.id
+                          ? "border-clay bg-clay/10"
+                          : "border-ink/10 hover:border-clay/50"
+                      }`}
+                    >
+                      <p className="font-display text-lg">{s.name}</p>
+                      <p className="text-sm text-ink/60">
+                        {s.price_delta > 0
+                          ? `+${Number(s.price_delta).toFixed(0)} DH`
+                          : "Inclus dans le prix de base"}
+                      </p>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <p className="mt-4 text-sm text-ink/50">
+                  Ce modèle est proposé en taille unique.
+                </p>
+              )}
+            </div>
+          )}
+
+          {step === 4 && (
             <div>
               <p className="font-display text-xl">Options</p>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -315,19 +416,14 @@ export default function Configurator({ product }: { product: Product }) {
             </div>
           )}
 
-          {step === 4 && (
+          {step === 5 && (
             <div>
               <p className="font-display text-xl">Résumé</p>
               <ul className="mt-4 space-y-2 text-sm text-ink/70">
                 <li>Modèle : {product.name}</li>
-                <li>Taille : {selectedSize?.name || "—"}</li>
-                <li>
-                  Couleur :{" "}
-                  {availableColors.find((c) => c.id === primaryColorId)?.name || "—"}
-                  {secondaryColorId
-                    ? ` / ${availableColors.find((c) => c.id === secondaryColorId)?.name}`
-                    : ""}
-                </li>
+                <li>Fil : {selectedMaterial?.name || "—"}</li>
+                <li>Couleur : {selectedColor?.name || "—"}</li>
+                {hasSizes && <li>Taille : {selectedSize?.name || "—"}</li>}
                 <li>
                   Options :{" "}
                   {selectedOptions.length > 0
@@ -351,11 +447,11 @@ export default function Configurator({ product }: { product: Product }) {
             </div>
           )}
 
-          {step === 5 && (
+          {step === 6 && (
             <div>
               <p className="font-display text-xl">Aperçu IA</p>
               <p className="mt-1 text-sm text-ink/60">
-                Visualisez votre pièce avant sa fabrication.
+                Visualisez votre pièce en « {selectedMaterial?.name} / {selectedColor?.name} » avant sa fabrication.
               </p>
 
               <div className="mt-4 aspect-square overflow-hidden rounded-xl bg-linen">
@@ -373,6 +469,10 @@ export default function Configurator({ product }: { product: Product }) {
                 )}
               </div>
 
+              {generationError && (
+                <p className="mt-3 text-sm text-red-700">{generationError}</p>
+              )}
+
               <button
                 type="button"
                 onClick={handleGeneratePreview}
@@ -388,7 +488,7 @@ export default function Configurator({ product }: { product: Product }) {
             </div>
           )}
 
-          {step === 6 && (
+          {step === 7 && (
             <div>
               <p className="font-display text-xl">Validation & livraison</p>
               <div className="mt-4 space-y-4">
@@ -448,7 +548,6 @@ export default function Configurator({ product }: { product: Product }) {
           )}
         </div>
 
-        {/* Récapitulatif prix + navigation */}
         <div className="h-fit space-y-4 rounded-2xl border border-ink/10 bg-card p-6">
           <p className="font-display text-lg">Total estimé</p>
           <p className="font-display text-3xl text-clay">
@@ -468,7 +567,7 @@ export default function Configurator({ product }: { product: Product }) {
                 Précédent
               </button>
             )}
-            {step < STEP_LABELS.length - 1 && (
+            {step < lastStepIndex && (
               <button
                 type="button"
                 onClick={() => setStep((s) => s + 1)}
