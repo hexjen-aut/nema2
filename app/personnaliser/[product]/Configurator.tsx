@@ -154,6 +154,7 @@ export default function Configurator({ product }: { product: Product }) {
           sizeName: selectedSize?.name ?? null,
           primaryColorName: selectedColor?.name ?? null,
           optionNames: selectedOptions.map((o) => o.name),
+          baseImageUrl: product.product_images[0]?.url ?? null,
         },
       });
 
