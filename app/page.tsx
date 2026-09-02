@@ -9,6 +9,8 @@ import Collections from "@/components/Collections";
 import ProductsGrid from "@/components/ProductsGrid";
 import Creez from "@/components/Creez";
 import Atelier from "@/components/Atelier";
+import ApercuIA from "@/components/ApercuIA";
+import CommentCaMarche from "@/components/CommentCaMarche";
 import { createClient } from "@/lib/supabase/server";
 
 const testimonials = [
@@ -84,6 +86,10 @@ export default async function Home() {
       </div>
 
       <Atelier />
+
+      <ApercuIA />
+
+      <CommentCaMarche />
 
       <section id="histoire" className="relative z-10 mx-auto max-w-wrap px-6 py-20">
         <div className="grid gap-10 md:grid-cols-2">
