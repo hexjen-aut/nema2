@@ -2,21 +2,14 @@ import ChainDivider from "@/components/ChainDivider";
 import CursorGlow from "@/components/CursorGlow";
 import Reveal from "@/components/Reveal";
 import TiltCard from "@/components/TiltCard";
-import MagneticButton from "@/components/MagneticButton";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import Univers from "@/components/Univers";
 import Collections from "@/components/Collections";
 import ProductsGrid from "@/components/ProductsGrid";
+import Creez from "@/components/Creez";
+import Atelier from "@/components/Atelier";
 import { createClient } from "@/lib/supabase/server";
-
-const steps = [
-  { label: "Modèle", detail: "Choisissez la silhouette qui vous parle." },
-  { label: "Taille", detail: "Le prix s'ajuste automatiquement." },
-  { label: "Couleurs", detail: "Principale et secondaire, à votre goût." },
-  { label: "Options", detail: "Fleurs, perles, broderie, doublure..." },
-  { label: "Aperçu IA", detail: "Votre pièce, visible avant fabrication." },
-];
 
 const testimonials = [
   {
@@ -84,37 +77,13 @@ export default async function Home() {
 
       <ProductsGrid products={products} categories={categories || []} />
 
+      <Creez />
+
       <div className="relative z-10 mx-auto max-w-wrap px-6">
         <ChainDivider color="#5F6B4A" />
       </div>
 
-      <section id="personnaliser" className="relative z-10 bg-card py-20">
-        <div className="mx-auto max-w-wrap px-6">
-          <Reveal>
-            <h2 className="font-display text-3xl">Le configurateur</h2>
-            <p className="mt-2 max-w-lg text-noir/70">
-              Le cœur du site : une pièce composée par vous, visible avant sa
-              fabrication.
-            </p>
-          </Reveal>
-          <div className="mt-10 grid gap-px overflow-hidden rounded-2xl border border-noir/10 sm:grid-cols-5">
-            {steps.map((s, i) => (
-              <Reveal key={s.label} delay={i * 80}>
-                <div className="h-full bg-ivoire p-5 transition-colors duration-300 hover:bg-orange/10">
-                  <p className="font-display text-lg">{s.label}</p>
-                  <p className="mt-1 text-sm text-noir/60">{s.detail}</p>
-                </div>
-              </Reveal>
-            ))}
-          </div>
-          <MagneticButton
-            href="#collections"
-            className="mt-8 inline-block rounded-full bg-orange px-6 py-3 text-sm text-ivoire hover:bg-noir transition-colors"
-          >
-            Commencer ma personnalisation
-          </MagneticButton>
-        </div>
-      </section>
+      <Atelier />
 
       <section id="histoire" className="relative z-10 mx-auto max-w-wrap px-6 py-20">
         <div className="grid gap-10 md:grid-cols-2">
