@@ -5,6 +5,7 @@ import TiltCard from "@/components/TiltCard";
 import MagneticButton from "@/components/MagneticButton";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
+import Univers from "@/components/Univers";
 import { createClient } from "@/lib/supabase/server";
 
 const collections = [
@@ -53,6 +54,8 @@ export default async function Home() {
       <Navbar accountHref={accountHref} />
 
       <Hero />
+
+      <Univers />
 
       <div className="relative z-10 mx-auto max-w-wrap px-6">
         <ChainDivider color="#F58220" />
