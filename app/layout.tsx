@@ -1,25 +1,24 @@
 import type { Metadata } from "next";
-import { Fraunces, Work_Sans } from "next/font/google";
-import ScrollYarnProgress from "@/components/ScrollYarnProgress";
+import { Cormorant_Garamond, Manrope } from "next/font/google";
 import "./globals.css";
 
-const fraunces = Fraunces({
+const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
-  variable: "--font-fraunces",
+  variable: "--font-cormorant",
   weight: ["400", "500", "600"],
   style: ["normal", "italic"],
 });
 
-const workSans = Work_Sans({
+const manrope = Manrope({
   subsets: ["latin"],
-  variable: "--font-work-sans",
-  weight: ["400", "500", "600"],
+  variable: "--font-manrope",
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
-  title: "Nema — Un sac, une âme",
+  title: "NEMA — Votre style, votre signature.",
   description:
-    "Sacs, bonnets et ensembles en crochet façonnés à la main, personnalisés pièce par pièce.",
+    "Des créations personnalisables — sacs, bonnets, ensembles et accessoires en crochet — pensées pour vous permettre d'exprimer ce qui vous rend unique.",
 };
 
 export default function RootLayout({
@@ -29,8 +28,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr">
-      <body className={`${fraunces.variable} ${workSans.variable} font-body`}>
-        <ScrollYarnProgress />
+      <body className={`${cormorant.variable} ${manrope.variable} font-body bg-ivoire text-noir`}>
         {children}
       </body>
     </html>
