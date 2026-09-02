@@ -5,19 +5,21 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        linen: "#EDE4D3",
-        card: "#F7F1E4",
-        ink: "#2B2318",
-        clay: "#A85D3B",
-        gold: "#C99A44",
-        moss: "#5F6B4A",
+        ivoire: "#FFFDF9",
+        rose: "#F9E7E5",
+        orange: "#F58220",
+        noir: "#171414",
+        champagne: "#D8C3B0",
       },
       fontFamily: {
-        display: ["var(--font-fraunces)", "serif"],
-        body: ["var(--font-work-sans)", "sans-serif"],
+        display: ["var(--font-cormorant)", "serif"],
+        body: ["var(--font-manrope)", "sans-serif"],
       },
       maxWidth: {
         wrap: "1240px",
+      },
+      letterSpacing: {
+        label: "0.14em",
       },
     },
   },
