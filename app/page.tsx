@@ -11,6 +11,8 @@ import Creez from "@/components/Creez";
 import Atelier from "@/components/Atelier";
 import ApercuIA from "@/components/ApercuIA";
 import CommentCaMarche from "@/components/CommentCaMarche";
+import Histoire from "@/components/Histoire";
+import Philosophie from "@/components/Philosophie";
 import { createClient } from "@/lib/supabase/server";
 
 const testimonials = [
@@ -91,31 +93,9 @@ export default async function Home() {
 
       <CommentCaMarche />
 
-      <section id="histoire" className="relative z-10 mx-auto max-w-wrap px-6 py-20">
-        <div className="grid gap-10 md:grid-cols-2">
-          <Reveal>
-            <h2 className="font-display text-3xl">Pourquoi NEMA</h2>
-            <p className="mt-4 text-noir/70">
-              NEMA n'est pas une boutique de plus. C'est un atelier où chaque
-              cliente conçoit sa propre pièce avant sa fabrication —
-              modèle, couleurs, options — puis suit sa commande du crochet à
-              la livraison.
-            </p>
-          </Reveal>
-          <div className="space-y-6">
-            {[
-              { title: "Sur mesure", color: "text-orange", detail: "Taille, couleurs et options choisies pièce par pièce." },
-              { title: "Aperçu avant fabrication", color: "text-moss", detail: "Vous validez le rendu avant que le crochet ne commence." },
-              { title: "Suivi transparent", color: "text-orange", detail: "Reçue, en fabrication, finitions, expédiée — à chaque étape." },
-            ].map((item, i) => (
-              <Reveal key={item.title} delay={i * 100}>
-                <p className={`font-display text-lg ${item.color}`}>{item.title}</p>
-                <p className="text-sm text-noir/60">{item.detail}</p>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
+      <Histoire />
+
+      <Philosophie />
 
       <div className="relative z-10 mx-auto max-w-wrap px-6">
         <ChainDivider color="#F58220" />
