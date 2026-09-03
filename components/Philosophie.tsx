@@ -8,7 +8,7 @@ const values = [
 
 export default function Philosophie() {
   return (
-    <section className="relative z-10 bg-rose/60 py-20 md:py-28">
+    <section id="philosophie" className="relative z-10 bg-rose/60 py-20 md:py-28">
       <div className="mx-auto max-w-wrap px-6">
         <Reveal>
           <h2 className="max-w-2xl font-display text-4xl leading-[1.2] md:text-5xl">
