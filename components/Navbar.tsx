@@ -8,7 +8,7 @@ const NAV_LINKS = [
   { href: "/#collections", label: "Collections" },
   { href: "/#personnaliser", label: "Créer" },
   { href: "/#histoire", label: "Notre histoire" },
-  { href: "/#avis", label: "Inspiration" }, // ancre temporaire, en attendant la vraie section Inspiration
+  { href: "/#inspiration", label: "Inspiration" },
 ];
 
 function IconSearch() {
