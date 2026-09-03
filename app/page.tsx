@@ -13,6 +13,8 @@ import ApercuIA from "@/components/ApercuIA";
 import CommentCaMarche from "@/components/CommentCaMarche";
 import Histoire from "@/components/Histoire";
 import Philosophie from "@/components/Philosophie";
+import Situation from "@/components/Situation";
+import Inspiration from "@/components/Inspiration";
 import { createClient } from "@/lib/supabase/server";
 
 const testimonials = [
@@ -96,6 +98,10 @@ export default async function Home() {
       <Histoire />
 
       <Philosophie />
+
+      <Situation />
+
+      <Inspiration />
 
       <div className="relative z-10 mx-auto max-w-wrap px-6">
         <ChainDivider color="#F58220" />
