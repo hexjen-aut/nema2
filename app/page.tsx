@@ -15,6 +15,8 @@ import Situation from "@/components/Situation";
 import Inspiration from "@/components/Inspiration";
 import Avis from "@/components/Avis";
 import Garanties from "@/components/Garanties";
+import CTAFinal from "@/components/CTAFinal";
+import Footer from "@/components/Footer";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function Home() {
@@ -95,30 +97,9 @@ export default async function Home() {
 
       <Garanties />
 
-      <footer className="relative z-10 border-t border-noir/10 bg-card">
-        <div className="mx-auto max-w-wrap px-6 py-12 text-sm text-noir/60">
-          <div className="flex flex-col justify-between gap-6 md:flex-row">
-            <div>
-              <p className="font-display text-lg">NEMA</p>
-              <p className="mt-2 max-w-xs">Votre style, votre signature.</p>
-            </div>
-            <div className="flex gap-10">
-              <div>
-                <p className="mb-2 text-noir">Boutique</p>
-                <p>Collections</p>
-                <p>Personnaliser</p>
-                <p>Nouveautés</p>
-              </div>
-              <div>
-                <p className="mb-2 text-noir">NEMA</p>
-                <p>Notre histoire</p>
-                <p>Avis clients</p>
-                <p>Contact</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <CTAFinal />
+
+      <Footer />
     </main>
   );
 }
