@@ -25,6 +25,9 @@ export default function InscriptionPage() {
       const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: { full_name: fullName, phone },
+        },
       });
 
       if (signUpError) {
@@ -39,22 +42,8 @@ export default function InscriptionPage() {
         return;
       }
 
-      // Crée la ligne de profil dans le schéma nema (policy self-insert requise).
-      const { error: profileError } = await supabase.from("profiles").insert({
-        id: data.user.id,
-        full_name: fullName,
-        phone,
-        role: "client",
-      });
-
-      if (profileError) {
-        console.error("[INSCRIPTION] erreur création profil:", profileError.message);
-        setError(
-          "Compte créé mais profil incomplet. Contactez-nous si le problème persiste."
-        );
-        setLoading(false);
-        return;
-      }
+      // Le profil est créé côté DB par le trigger on_auth_user_created_nema
+      // (évite l'échec RLS quand il n'y a pas encore de session, ex. confirmation email active).
 
       // Si la confirmation email est activée, il n'y aura pas de session immédiate.
       if (data.session) {
