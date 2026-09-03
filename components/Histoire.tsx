@@ -1,14 +1,19 @@
 import Reveal from "@/components/Reveal";
 
-export default function Histoire() {
+export default function Histoire({ imageUrl }: { imageUrl?: string | null }) {
   return (
     <section id="histoire" className="relative z-10 mx-auto max-w-wrap px-6 py-20 md:py-28">
       <div className="grid gap-12 md:grid-cols-2 md:items-center">
         <Reveal>
           <div className="aspect-[4/5] overflow-hidden rounded-[28px] bg-champagne/30">
-            <div className="flex h-full items-center justify-center px-6 text-center text-xs text-noir/40">
-              Photo à ajouter depuis l'admin — atelier, création ou portrait
-            </div>
+            {imageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={imageUrl} alt="L'histoire NEMA" className="h-full w-full object-cover" />
+            ) : (
+              <div className="flex h-full items-center justify-center px-6 text-center text-xs text-noir/40">
+                Photo à ajouter depuis l'admin — atelier, création ou portrait
+              </div>
+            )}
           </div>
         </Reveal>
 
