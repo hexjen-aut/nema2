@@ -270,7 +270,11 @@ export default function Configurator({ product }: { product: Product }) {
 
       <div className="mx-auto grid max-w-[1400px] gap-8 px-6 py-10 lg:grid-cols-[300px_1fr_340px]">
         {/* GAUCHE — accordéon de configuration */}
-        <div className="order-2 lg:order-1">
+        <div
+          className={`order-2 transition-opacity duration-300 lg:order-1 ${
+            generating ? "pointer-events-none opacity-50" : ""
+          }`}
+        >
           <p className="font-display text-2xl">{product.name}</p>
           <p className="mt-1 text-sm text-noir/50">
             {product.categories?.name} · Livraison en {product.fabrication_days} jours
@@ -448,7 +452,7 @@ export default function Configurator({ product }: { product: Product }) {
 
         {/* CENTRE — aperçu grand format */}
         <div className="order-1 lg:order-2">
-          <div className="aspect-[4/5] w-full overflow-hidden rounded-[28px] bg-rose">
+          <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[28px] bg-rose">
             {generatedImageUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -465,7 +469,20 @@ export default function Configurator({ product }: { product: Product }) {
               />
             ) : (
               <div className="flex h-full items-center justify-center text-sm text-noir/40">
-                {generating ? "Génération en cours..." : "Pas de photo disponible"}
+                Pas de photo disponible
+              </div>
+            )}
+
+            {generating && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-noir/70 text-ivoire backdrop-blur-sm">
+                <span
+                  aria-hidden="true"
+                  className="h-10 w-10 animate-spin rounded-full border-2 border-ivoire/30 border-t-ivoire"
+                />
+                <p className="font-display text-lg">Voyez-la avant qu'elle existe...</p>
+                <p className="text-xs text-ivoire/60">
+                  Génération de votre aperçu, quelques secondes.
+                </p>
               </div>
             )}
           </div>
