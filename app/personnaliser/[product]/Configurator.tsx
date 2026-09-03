@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { submitOrder } from "./actions";
 import { createClient as createClientBrowser } from "@/lib/supabase/client";
@@ -43,22 +43,48 @@ type Product = {
   product_materials: ProductMaterial[];
 };
 
-// Étape "Taille" retirée du flux principal si le produit n'en propose pas.
-const STEP_LABELS = [
-  "Modèle",
-  "Fil",
-  "Couleur",
-  "Taille",
-  "Options",
-  "Résumé",
-  "Aperçu IA",
-  "Validation",
-];
+type SectionKey = "fil" | "couleur" | "taille" | "options" | "personnalisation";
+
+function AccordionSection({
+  title,
+  subtitle,
+  isOpen,
+  onToggle,
+  disabled,
+  children,
+}: {
+  title: string;
+  subtitle?: string;
+  isOpen: boolean;
+  onToggle: () => void;
+  disabled?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <div className="border-b border-noir/10 last:border-b-0">
+      <button
+        type="button"
+        onClick={onToggle}
+        disabled={disabled}
+        className="flex w-full items-center justify-between py-4 text-left disabled:opacity-40"
+      >
+        <span>
+          <span className="font-display text-lg">{title}</span>
+          {subtitle && <span className="ml-2 text-xs text-noir/50">{subtitle}</span>}
+        </span>
+        <span
+          className={`text-noir/40 transition-transform duration-200 ${isOpen ? "rotate-45" : ""}`}
+          aria-hidden="true"
+        >
+          +
+        </span>
+      </button>
+      {isOpen && !disabled && <div className="pb-5">{children}</div>}
+    </div>
+  );
+}
 
 export default function Configurator({ product }: { product: Product }) {
-  const [step, setStep] = useState(0);
-
-  // Ne garde que les fils réellement proposés pour ce produit et disponibles.
   const availableMaterials = useMemo(
     () =>
       product.product_materials
@@ -72,12 +98,9 @@ export default function Configurator({ product }: { product: Product }) {
     availableMaterials[0] ??
     null;
 
-  const [materialId, setMaterialId] = useState<string | null>(
-    defaultMaterial?.id ?? null
-  );
+  const [materialId, setMaterialId] = useState<string | null>(defaultMaterial?.id ?? null);
   const selectedMaterial = availableMaterials.find((m) => m.id === materialId) ?? null;
 
-  // La liste des couleurs dépend TOUJOURS du fil sélectionné.
   const availableColors = useMemo(
     () =>
       (selectedMaterial?.material_colors ?? []).filter(
@@ -87,10 +110,8 @@ export default function Configurator({ product }: { product: Product }) {
   );
 
   const [materialColorId, setMaterialColorId] = useState<string | null>(null);
-
-  const [sizeId, setSizeId] = useState<string | null>(
-    product.product_sizes[0]?.id ?? null
-  );
+  const hasSizes = product.product_sizes.length > 0;
+  const [sizeId, setSizeId] = useState<string | null>(product.product_sizes[0]?.id ?? null);
   const [optionIds, setOptionIds] = useState<string[]>([]);
   const [quantity, setQuantity] = useState(1);
   const [comments, setComments] = useState("");
@@ -107,12 +128,22 @@ export default function Configurator({ product }: { product: Product }) {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
+  const [openSections, setOpenSections] = useState<Record<SectionKey, boolean>>({
+    fil: true,
+    couleur: true,
+    taille: true,
+    options: false,
+    personnalisation: false,
+  });
+
+  function toggleSection(key: SectionKey) {
+    setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
+  }
+
   const availableOptions = product.product_options.filter((o) => o.is_available);
   const selectedSize = product.product_sizes.find((s) => s.id === sizeId);
   const selectedOptions = availableOptions.filter((o) => optionIds.includes(o.id));
   const selectedColor = availableColors.find((c) => c.id === materialColorId);
-
-  const hasSizes = product.product_sizes.length > 0;
 
   const unitPrice = useMemo(() => {
     const materialDelta = Number(selectedMaterial?.price_delta || 0);
@@ -123,6 +154,20 @@ export default function Configurator({ product }: { product: Product }) {
 
   const totalPrice = unitPrice * quantity;
 
+  // Compteur "X/5" approximatif : Fil, Couleur, Taille (ou non applicable),
+  // Options et Personnalisation étant les 5 catégories du cahier des charges.
+  // Options/Personnalisation sont facultatives, donc comptées dès qu'elles
+  // ont été consultées (ouvertes) ou renseignées.
+  const completedCount = useMemo(() => {
+    let n = 0;
+    if (materialId) n++;
+    if (materialColorId) n++;
+    if (!hasSizes || sizeId) n++;
+    if (optionIds.length > 0 || openSections.options) n++;
+    if (comments.trim().length > 0 || openSections.personnalisation) n++;
+    return n;
+  }, [materialId, materialColorId, hasSizes, sizeId, optionIds, comments, openSections]);
+
   function toggleOption(id: string) {
     setOptionIds((prev) =>
       prev.includes(id) ? prev.filter((o) => o !== id) : [...prev, id]
@@ -131,15 +176,13 @@ export default function Configurator({ product }: { product: Product }) {
 
   function handleSelectMaterial(id: string) {
     setMaterialId(id);
-    // On réinitialise la couleur : la palette change avec le fil.
     setMaterialColorId(null);
+    setGeneratedImageUrl(null);
   }
 
-  function canGoNext(): boolean {
-    if (step === 1) return Boolean(materialId);
-    if (step === 2) return Boolean(materialColorId);
-    if (step === 3 && hasSizes) return Boolean(sizeId);
-    return true;
+  function handleSelectColor(id: string) {
+    setMaterialColorId(id);
+    setGeneratedImageUrl(null);
   }
 
   async function handleGeneratePreview() {
@@ -173,7 +216,18 @@ export default function Configurator({ product }: { product: Product }) {
     }
   }
 
+  const canValidate = Boolean(
+    materialId &&
+      materialColorId &&
+      (!hasSizes || sizeId) &&
+      generatedImageUrl &&
+      addressLine &&
+      city &&
+      country
+  );
+
   async function handleSubmit() {
+    if (!canValidate) return;
     setSubmitting(true);
     setSubmitError(null);
 
@@ -201,79 +255,47 @@ export default function Configurator({ product }: { product: Product }) {
     }
   }
 
-  const lastStepIndex = STEP_LABELS.length - 1;
-
   return (
-    <div className="mx-auto max-w-wrap px-6 py-10">
-      <Link href="/" className="text-sm text-ink/50 hover:text-clay transition-colors">
-        ← Retour à la boutique
-      </Link>
+    <div className="min-h-screen bg-ivoire">
+      {/* Barre supérieure */}
+      <header className="sticky top-0 z-40 border-b border-noir/10 bg-ivoire/95 px-6 py-4 backdrop-blur">
+        <div className="mx-auto flex max-w-[1400px] items-center justify-between">
+          <Link href="/" className="font-display text-lg hover:text-orange transition-colors">
+            NEMA
+          </Link>
+          <p className="hidden text-sm text-noir/60 md:block">Votre création</p>
+          <p className="text-xs text-noir/50">{completedCount}/5 complétées</p>
+        </div>
+      </header>
 
-      <h1 className="mt-3 font-display text-3xl">{product.name}</h1>
-      <p className="mt-1 text-sm text-ink/60">
-        {product.categories?.name} · Livraison en {product.fabrication_days} jours
-      </p>
-
-      <div className="mt-8 flex items-center gap-1">
-        {STEP_LABELS.map((label, i) => (
-          <div key={label} className="flex flex-1 flex-col items-center gap-1">
-            <div
-              className={`h-1.5 w-full origin-bottom rounded-full transition-colors duration-500 ${
-                i <= step ? "bg-clay" : "bg-ink/10"
-              } ${i === step ? "step-dot-active" : ""}`}
-            />
-            <span
-              className={`hidden text-[10px] sm:block ${
-                i === step ? "text-clay" : "text-ink/40"
-              }`}
-            >
-              {label}
-            </span>
-          </div>
-        ))}
-      </div>
-
-      <div className="mt-8 grid gap-8 md:grid-cols-[1fr_320px]">
-        <div key={step} className="step-enter rounded-2xl border border-ink/10 bg-card p-6">
-          {step === 0 && (
-            <div>
-              <p className="font-display text-xl">Modèle</p>
-              <div className="mt-4 aspect-[4/3] overflow-hidden rounded-xl bg-linen">
-                {product.product_images[0]?.url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={product.product_images[0].url}
-                    alt={product.name}
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <div className="flex h-full items-center justify-center text-sm text-ink/40">
-                    Pas de photo disponible
-                  </div>
-                )}
-              </div>
-              {product.description && (
-                <p className="mt-4 text-sm text-ink/70">{product.description}</p>
-              )}
-            </div>
+      <div className="mx-auto grid max-w-[1400px] gap-8 px-6 py-10 lg:grid-cols-[300px_1fr_340px]">
+        {/* GAUCHE — accordéon de configuration */}
+        <div className="order-2 lg:order-1">
+          <p className="font-display text-2xl">{product.name}</p>
+          <p className="mt-1 text-sm text-noir/50">
+            {product.categories?.name} · Livraison en {product.fabrication_days} jours
+          </p>
+          {product.description && (
+            <p className="mt-3 text-sm text-noir/60">{product.description}</p>
           )}
 
-          {step === 1 && (
-            <div>
-              <p className="font-display text-xl">Choisissez le fil</p>
-              <p className="mt-1 text-sm text-ink/60">
-                Le fil détermine le rendu, le toucher et le prix final.
-              </p>
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <div className="mt-6 rounded-2xl border border-noir/10 bg-card px-5">
+            <AccordionSection
+              title="Fil"
+              subtitle="Tout commence par une forme."
+              isOpen={openSections.fil}
+              onToggle={() => toggleSection("fil")}
+            >
+              <div className="grid gap-2">
                 {availableMaterials.map((m) => (
                   <button
                     key={m.id}
                     type="button"
                     onClick={() => handleSelectMaterial(m.id)}
-                    className={`flex items-center gap-3 rounded-xl border p-4 text-left transition-colors ${
+                    className={`flex items-center gap-3 rounded-xl border p-3 text-left transition-colors ${
                       materialId === m.id
-                        ? "border-clay bg-clay/10"
-                        : "border-ink/10 hover:border-clay/50"
+                        ? "border-orange bg-orange/10"
+                        : "border-noir/10 hover:border-orange/50"
                     }`}
                   >
                     {m.texture_image_url && (
@@ -281,308 +303,287 @@ export default function Configurator({ product }: { product: Product }) {
                       <img
                         src={m.texture_image_url}
                         alt=""
-                        className="h-12 w-12 shrink-0 rounded-lg object-cover"
+                        className="h-10 w-10 shrink-0 rounded-lg object-cover"
                       />
                     )}
                     <div>
-                      <p className="font-display">{m.name}</p>
-                      <p className="text-sm text-ink/60">
+                      <p className="text-sm">{m.name}</p>
+                      <p className="text-xs text-noir/50">
                         {m.price_delta > 0
                           ? `+${Number(m.price_delta).toFixed(0)} DH`
-                          : "Inclus dans le prix de base"}
+                          : "Inclus"}
                       </p>
                     </div>
                   </button>
                 ))}
                 {availableMaterials.length === 0 && (
-                  <p className="text-sm text-ink/50">
-                    Aucun fil configuré pour ce modèle pour le moment.
-                  </p>
+                  <p className="text-sm text-noir/50">Aucun fil configuré pour ce modèle.</p>
                 )}
               </div>
-            </div>
-          )}
+            </AccordionSection>
 
-          {step === 2 && (
-            <div>
-              <p className="font-display text-xl">Couleur</p>
-              <p className="mt-1 text-sm text-ink/60">
-                Couleurs disponibles pour le fil « {selectedMaterial?.name} »
-              </p>
-              <div className="mt-4 flex flex-wrap gap-4">
+            <AccordionSection
+              title="Couleur"
+              subtitle="Choisissez votre humeur."
+              isOpen={openSections.couleur}
+              onToggle={() => toggleSection("couleur")}
+              disabled={!selectedMaterial}
+            >
+              <div className="flex flex-wrap gap-3">
                 {availableColors.map((c) => (
                   <button
                     key={c.id}
                     type="button"
-                    onClick={() => setMaterialColorId(c.id)}
+                    onClick={() => handleSelectColor(c.id)}
                     className="flex flex-col items-center gap-1"
                   >
                     <span
-                      className={`relative h-12 w-12 overflow-hidden rounded-full border-2 transition-all ${
-                        materialColorId === c.id
-                          ? "border-clay scale-110"
-                          : "border-ink/10"
+                      className={`relative h-10 w-10 overflow-hidden rounded-full border-2 transition-all ${
+                        materialColorId === c.id ? "border-orange scale-110" : "border-noir/10"
                       }`}
                       style={{ backgroundColor: c.hex || "#eee" }}
                     >
                       {c.swatch_image_url && (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={c.swatch_image_url}
-                          alt=""
-                          className="h-full w-full object-cover"
-                        />
+                        <img src={c.swatch_image_url} alt="" className="h-full w-full object-cover" />
                       )}
                     </span>
-                    <span className="text-xs text-ink/60">{c.name}</span>
+                    <span className="text-[11px] text-noir/60">{c.name}</span>
                     {c.stock_status === "low_stock" && (
-                      <span className="text-[10px] text-gold">Stock limité</span>
+                      <span className="text-[10px] text-champagne">Stock limité</span>
                     )}
                   </button>
                 ))}
                 {availableColors.length === 0 && (
-                  <p className="text-sm text-ink/50">
-                    Aucune couleur disponible pour ce fil actuellement.
+                  <p className="text-sm text-noir/50">
+                    Aucune couleur disponible pour ce fil.
                   </p>
                 )}
               </div>
-            </div>
-          )}
+            </AccordionSection>
 
-          {step === 3 && (
-            <div>
-              <p className="font-display text-xl">Choisissez une taille</p>
-              {hasSizes ? (
-                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            {hasSizes && (
+              <AccordionSection
+                title="Taille"
+                subtitle="Les détails font votre différence."
+                isOpen={openSections.taille}
+                onToggle={() => toggleSection("taille")}
+              >
+                <div className="grid gap-2">
                   {product.product_sizes.map((s) => (
                     <button
                       key={s.id}
                       type="button"
                       onClick={() => setSizeId(s.id)}
-                      className={`rounded-xl border p-4 text-left transition-colors ${
+                      className={`rounded-xl border p-3 text-left transition-colors ${
                         sizeId === s.id
-                          ? "border-clay bg-clay/10"
-                          : "border-ink/10 hover:border-clay/50"
+                          ? "border-orange bg-orange/10"
+                          : "border-noir/10 hover:border-orange/50"
                       }`}
                     >
-                      <p className="font-display text-lg">{s.name}</p>
-                      <p className="text-sm text-ink/60">
-                        {s.price_delta > 0
-                          ? `+${Number(s.price_delta).toFixed(0)} DH`
-                          : "Inclus dans le prix de base"}
+                      <p className="text-sm">{s.name}</p>
+                      <p className="text-xs text-noir/50">
+                        {s.price_delta > 0 ? `+${Number(s.price_delta).toFixed(0)} DH` : "Inclus"}
                       </p>
                     </button>
                   ))}
                 </div>
-              ) : (
-                <p className="mt-4 text-sm text-ink/50">
-                  Ce modèle est proposé en taille unique.
-                </p>
-              )}
-            </div>
-          )}
+              </AccordionSection>
+            )}
 
-          {step === 4 && (
-            <div>
-              <p className="font-display text-xl">Options</p>
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <AccordionSection
+              title="Options"
+              isOpen={openSections.options}
+              onToggle={() => toggleSection("options")}
+            >
+              <div className="grid gap-2">
                 {availableOptions.map((o) => (
                   <button
                     key={o.id}
                     type="button"
                     onClick={() => toggleOption(o.id)}
-                    className={`rounded-xl border p-4 text-left transition-colors ${
+                    className={`rounded-xl border p-3 text-left transition-colors ${
                       optionIds.includes(o.id)
-                        ? "border-clay bg-clay/10"
-                        : "border-ink/10 hover:border-clay/50"
+                        ? "border-orange bg-orange/10"
+                        : "border-noir/10 hover:border-orange/50"
                     }`}
                   >
-                    <p className="font-display">{o.name}</p>
-                    <p className="text-sm text-ink/60">
-                      +{Number(o.price).toFixed(0)} DH
-                    </p>
+                    <p className="text-sm">{o.name}</p>
+                    <p className="text-xs text-noir/50">+{Number(o.price).toFixed(0)} DH</p>
                   </button>
                 ))}
                 {availableOptions.length === 0 && (
-                  <p className="text-sm text-ink/50">Aucune option disponible.</p>
+                  <p className="text-sm text-noir/50">Aucune option disponible.</p>
                 )}
-              </div>
 
-              <div className="mt-6">
-                <label className="text-sm text-ink/70">Quantité</label>
+                <label className="mt-2 text-xs text-noir/70">Quantité</label>
                 <input
                   type="number"
                   min={1}
                   value={quantity}
                   onChange={(e) => setQuantity(Math.max(1, Number(e.target.value)))}
-                  className="mt-1 w-24 rounded-lg border border-ink/15 bg-linen px-3 py-2 text-sm outline-none focus:border-clay"
+                  className="w-20 rounded-lg border border-noir/15 bg-ivoire px-3 py-1.5 text-sm outline-none focus:border-orange"
                 />
               </div>
-            </div>
-          )}
+            </AccordionSection>
 
-          {step === 5 && (
-            <div>
-              <p className="font-display text-xl">Résumé</p>
-              <ul className="mt-4 space-y-2 text-sm text-ink/70">
-                <li>Modèle : {product.name}</li>
-                <li>Fil : {selectedMaterial?.name || "—"}</li>
-                <li>Couleur : {selectedColor?.name || "—"}</li>
-                {hasSizes && <li>Taille : {selectedSize?.name || "—"}</li>}
-                <li>
-                  Options :{" "}
-                  {selectedOptions.length > 0
-                    ? selectedOptions.map((o) => o.name).join(", ")
-                    : "Aucune"}
-                </li>
-                <li>Quantité : {quantity}</li>
-              </ul>
-
-              <div className="mt-6">
-                <label className="text-sm text-ink/70">
-                  Un commentaire pour l'atelier ? (optionnel)
-                </label>
-                <textarea
-                  value={comments}
-                  onChange={(e) => setComments(e.target.value)}
-                  rows={3}
-                  className="mt-1 w-full rounded-lg border border-ink/15 bg-linen px-3 py-2 text-sm outline-none focus:border-clay"
-                />
-              </div>
-            </div>
-          )}
-
-          {step === 6 && (
-            <div>
-              <p className="font-display text-xl">Aperçu IA</p>
-              <p className="mt-1 text-sm text-ink/60">
-                Visualisez votre pièce en « {selectedMaterial?.name} / {selectedColor?.name} » avant sa fabrication.
-              </p>
-
-              <div className="mt-4 aspect-square overflow-hidden rounded-xl bg-linen">
-                {generatedImageUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={generatedImageUrl}
-                    alt="Aperçu généré"
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <div className="flex h-full flex-col items-center justify-center gap-3 text-center text-sm text-ink/40">
-                    {generating ? "Génération en cours..." : "Aucun aperçu généré"}
-                  </div>
-                )}
-              </div>
-
-              {generationError && (
-                <p className="mt-4 text-sm text-red-700">{generationError}</p>
-              )}
-
-              <button
-                type="button"
-                onClick={handleGeneratePreview}
-                disabled={generating}
-                className="mt-4 rounded-full bg-clay px-6 py-2.5 text-sm text-card hover:bg-ink transition-colors disabled:opacity-50"
-              >
-                {generating
-                  ? "Génération..."
-                  : generatedImageUrl
-                  ? "Régénérer"
-                  : "Générer l'aperçu"}
-              </button>
-            </div>
-          )}
-
-          {step === 7 && (
-            <div>
-              <p className="font-display text-xl">Validation & livraison</p>
-              <div className="mt-4 space-y-4">
-                <div>
-                  <label className="text-sm text-ink/70">Libellé de l'adresse</label>
-                  <input
-                    value={addressLabel}
-                    onChange={(e) => setAddressLabel(e.target.value)}
-                    placeholder="Domicile, Bureau..."
-                    className="mt-1 w-full rounded-lg border border-ink/15 bg-linen px-3 py-2 text-sm outline-none focus:border-clay"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm text-ink/70">Adresse</label>
-                  <input
-                    value={addressLine}
-                    onChange={(e) => setAddressLine(e.target.value)}
-                    required
-                    className="mt-1 w-full rounded-lg border border-ink/15 bg-linen px-3 py-2 text-sm outline-none focus:border-clay"
-                  />
-                </div>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <label className="text-sm text-ink/70">Ville</label>
-                    <input
-                      value={city}
-                      onChange={(e) => setCity(e.target.value)}
-                      required
-                      className="mt-1 w-full rounded-lg border border-ink/15 bg-linen px-3 py-2 text-sm outline-none focus:border-clay"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm text-ink/70">Pays</label>
-                    <input
-                      value={country}
-                      onChange={(e) => setCountry(e.target.value)}
-                      required
-                      className="mt-1 w-full rounded-lg border border-ink/15 bg-linen px-3 py-2 text-sm outline-none focus:border-clay"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {submitError && (
-                <p className="mt-4 text-sm text-red-700">{submitError}</p>
-              )}
-
-              <button
-                type="button"
-                onClick={handleSubmit}
-                disabled={submitting || !addressLine || !city || !country}
-                className="mt-6 w-full rounded-full bg-clay px-6 py-3 text-sm text-card hover:bg-ink transition-colors disabled:opacity-50"
-              >
-                {submitting ? "Validation..." : "Valider ma commande"}
-              </button>
-            </div>
-          )}
+            <AccordionSection
+              title="Personnalisation"
+              subtitle="Ajoutez votre signature."
+              isOpen={openSections.personnalisation}
+              onToggle={() => toggleSection("personnalisation")}
+            >
+              <label className="text-xs text-noir/70">
+                Un mot pour l'atelier ? (initiales, détail particulier...)
+              </label>
+              <textarea
+                value={comments}
+                onChange={(e) => setComments(e.target.value)}
+                rows={3}
+                className="mt-1 w-full rounded-lg border border-noir/15 bg-ivoire px-3 py-2 text-sm outline-none focus:border-orange"
+              />
+            </AccordionSection>
+          </div>
         </div>
 
-        <div className="h-fit space-y-4 rounded-2xl border border-ink/10 bg-card p-6">
-          <p className="font-display text-lg">Total estimé</p>
-          <p className="font-display text-3xl text-clay">
-            {totalPrice.toFixed(0)} DH
-          </p>
-          <p className="text-xs text-ink/50">
-            Acompte de 40% à la commande, solde à la livraison.
-          </p>
-
-          <div className="flex gap-3 pt-4">
-            {step > 0 && (
-              <button
-                type="button"
-                onClick={() => setStep((s) => s - 1)}
-                className="flex-1 rounded-full border border-ink/20 px-4 py-2.5 text-sm hover:bg-linen transition-colors"
-              >
-                Précédent
-              </button>
-            )}
-            {step < lastStepIndex && (
-              <button
-                type="button"
-                onClick={() => setStep((s) => s + 1)}
-                disabled={!canGoNext()}
-                className="flex-1 rounded-full bg-clay px-4 py-2.5 text-sm text-card hover:bg-ink transition-colors disabled:opacity-50"
-              >
-                Suivant
-              </button>
+        {/* CENTRE — aperçu grand format */}
+        <div className="order-1 lg:order-2">
+          <div className="aspect-[4/5] w-full overflow-hidden rounded-[28px] bg-rose">
+            {generatedImageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={generatedImageUrl}
+                alt="Aperçu de votre création"
+                className="h-full w-full object-cover"
+              />
+            ) : product.product_images[0]?.url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={product.product_images[0].url}
+                alt={product.name}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div className="flex h-full items-center justify-center text-sm text-noir/40">
+                {generating ? "Génération en cours..." : "Pas de photo disponible"}
+              </div>
             )}
           </div>
+
+          <div className="mt-4 flex flex-wrap gap-2">
+            {selectedMaterial && (
+              <span className="rounded-full border border-noir/15 px-3 py-1 text-xs text-noir/60">
+                {selectedMaterial.name}
+              </span>
+            )}
+            {selectedColor && (
+              <span className="rounded-full border border-noir/15 px-3 py-1 text-xs text-noir/60">
+                {selectedColor.name}
+              </span>
+            )}
+            {hasSizes && selectedSize && (
+              <span className="rounded-full border border-noir/15 px-3 py-1 text-xs text-noir/60">
+                {selectedSize.name}
+              </span>
+            )}
+          </div>
+
+          <div className="mt-6 rounded-2xl border border-noir/10 bg-card p-6 text-center">
+            <p className="font-display text-lg">Voyez-la avant qu'elle existe.</p>
+            <p className="mt-1 text-sm text-noir/60">
+              Générez un aperçu IA de votre pièce en « {selectedMaterial?.name || "—"} /{" "}
+              {selectedColor?.name || "—"} » — nécessaire pour valider votre commande.
+            </p>
+            {generationError && (
+              <p className="mt-3 text-sm text-red-700">{generationError}</p>
+            )}
+            <button
+              type="button"
+              onClick={handleGeneratePreview}
+              disabled={generating || !materialId || !materialColorId}
+              className="mt-4 rounded-full bg-orange px-6 py-2.5 text-sm text-ivoire hover:bg-noir transition-colors disabled:opacity-50"
+            >
+              {generating
+                ? "Génération..."
+                : generatedImageUrl
+                ? "Régénérer l'aperçu"
+                : "Générer l'aperçu"}
+            </button>
+          </div>
+        </div>
+
+        {/* DROITE — résumé + validation, sticky */}
+        <div className="order-3 h-fit space-y-5 rounded-2xl border border-noir/10 bg-card p-6 lg:sticky lg:top-24">
+          <p className="font-display text-lg">Votre NEMA</p>
+
+          <ul className="space-y-1.5 text-sm text-noir/70">
+            <li>Produit : {product.name}</li>
+            <li>Fil : {selectedMaterial?.name || "—"}</li>
+            <li>Couleur : {selectedColor?.name || "—"}</li>
+            {hasSizes && <li>Taille : {selectedSize?.name || "—"}</li>}
+            <li>
+              Options :{" "}
+              {selectedOptions.length > 0
+                ? selectedOptions.map((o) => o.name).join(", ")
+                : "Aucune"}
+            </li>
+            <li>Quantité : {quantity}</li>
+          </ul>
+
+          <div>
+            <p className="font-display text-3xl text-orange">{totalPrice.toFixed(0)} DH</p>
+            <p className="text-xs text-noir/50">Acompte de 40% à la commande, solde à la livraison.</p>
+          </div>
+
+          <div className="space-y-3 border-t border-noir/10 pt-5">
+            <p className="text-xs tracking-label text-noir/40">LIVRAISON</p>
+            <input
+              value={addressLabel}
+              onChange={(e) => setAddressLabel(e.target.value)}
+              placeholder="Domicile, Bureau..."
+              className="w-full rounded-lg border border-noir/15 bg-ivoire px-3 py-2 text-sm outline-none focus:border-orange"
+            />
+            <input
+              value={addressLine}
+              onChange={(e) => setAddressLine(e.target.value)}
+              placeholder="Adresse"
+              required
+              className="w-full rounded-lg border border-noir/15 bg-ivoire px-3 py-2 text-sm outline-none focus:border-orange"
+            />
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                placeholder="Ville"
+                required
+                className="w-full rounded-lg border border-noir/15 bg-ivoire px-3 py-2 text-sm outline-none focus:border-orange"
+              />
+              <input
+                value={country}
+                onChange={(e) => setCountry(e.target.value)}
+                placeholder="Pays"
+                required
+                className="w-full rounded-lg border border-noir/15 bg-ivoire px-3 py-2 text-sm outline-none focus:border-orange"
+              />
+            </div>
+          </div>
+
+          {!generatedImageUrl && (
+            <p className="text-xs text-noir/50">
+              Générez l'aperçu IA (au centre) pour pouvoir valider votre création.
+            </p>
+          )}
+
+          {submitError && <p className="text-sm text-red-700">{submitError}</p>}
+
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={submitting || !canValidate}
+            className="w-full rounded-full bg-orange px-6 py-3 text-sm text-ivoire hover:bg-noir transition-colors disabled:opacity-50"
+          >
+            {submitting ? "Validation..." : "Valider ma création"}
+          </button>
         </div>
       </div>
     </div>
