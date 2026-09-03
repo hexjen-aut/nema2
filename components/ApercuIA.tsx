@@ -1,7 +1,13 @@
 import Link from "next/link";
 import Reveal from "@/components/Reveal";
 
-export default function ApercuIA() {
+export default function ApercuIA({
+  avantUrl,
+  apresUrl,
+}: {
+  avantUrl?: string | null;
+  apresUrl?: string | null;
+}) {
   return (
     <section className="relative z-10 mx-auto max-w-wrap px-6 py-20 md:py-28">
       <div className="grid gap-12 md:grid-cols-2 md:items-center">
@@ -25,9 +31,14 @@ export default function ApercuIA() {
           <div className="flex flex-col items-center gap-3">
             <div className="w-full max-w-sm">
               <div className="aspect-[4/3] overflow-hidden rounded-2xl bg-champagne/30">
-                <div className="flex h-full items-center justify-center text-xs text-noir/40">
-                  Configuration en cours
-                </div>
+                {avantUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={avantUrl} alt="Avant — configuration" className="h-full w-full object-cover" />
+                ) : (
+                  <div className="flex h-full items-center justify-center text-xs text-noir/40">
+                    Configuration en cours
+                  </div>
+                )}
               </div>
               <p className="mt-2 text-xs tracking-label text-noir/50">AVANT — Configuration.</p>
             </div>
@@ -36,9 +47,14 @@ export default function ApercuIA() {
 
             <div className="w-full max-w-sm">
               <div className="aspect-[4/3] overflow-hidden rounded-2xl bg-rose">
-                <div className="flex h-full items-center justify-center text-xs text-noir/40">
-                  Aperçu généré à venir
-                </div>
+                {apresUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={apresUrl} alt="Après — rendu final" className="h-full w-full object-cover" />
+                ) : (
+                  <div className="flex h-full items-center justify-center text-xs text-noir/40">
+                    Aperçu généré à venir
+                  </div>
+                )}
               </div>
               <p className="mt-2 text-xs tracking-label text-noir/50">APRÈS — Rendu final.</p>
             </div>
