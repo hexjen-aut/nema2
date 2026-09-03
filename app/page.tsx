@@ -1,7 +1,5 @@
 import ChainDivider from "@/components/ChainDivider";
 import CursorGlow from "@/components/CursorGlow";
-import Reveal from "@/components/Reveal";
-import TiltCard from "@/components/TiltCard";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import Univers from "@/components/Univers";
@@ -15,23 +13,9 @@ import Histoire from "@/components/Histoire";
 import Philosophie from "@/components/Philosophie";
 import Situation from "@/components/Situation";
 import Inspiration from "@/components/Inspiration";
+import Avis from "@/components/Avis";
+import Garanties from "@/components/Garanties";
 import { createClient } from "@/lib/supabase/server";
-
-const testimonials = [
-  {
-    quote:
-      "J'ai pu voir mon sac avant même qu'il soit commencé. Le résultat final était identique.",
-    name: "Aïcha, Libreville",
-  },
-  {
-    quote: "Le bonnet est arrivé exactement comme je l'avais imaginé, couleurs et tout.",
-    name: "Salma, Casablanca",
-  },
-  {
-    quote: "Un vrai travail d'artisan, avec un suivi de commande très clair.",
-    name: "Nadia, Rabat",
-  },
-];
 
 export default async function Home() {
   const supabase = createClient();
@@ -107,21 +91,9 @@ export default async function Home() {
         <ChainDivider color="#F58220" />
       </div>
 
-      <section id="avis" className="relative z-10 mx-auto max-w-wrap px-6 py-20">
-        <Reveal>
-          <h2 className="font-display text-3xl">Avis clients</h2>
-        </Reveal>
-        <div className="mt-10 grid gap-6 md:grid-cols-3">
-          {testimonials.map((t, i) => (
-            <Reveal key={t.name} delay={i * 100}>
-              <TiltCard className="rounded-2xl bg-card p-6 hover:shadow-xl">
-                <p className="font-display italic text-noir/80">"{t.quote}"</p>
-                <p className="mt-4 text-sm text-noir/50">{t.name}</p>
-              </TiltCard>
-            </Reveal>
-          ))}
-        </div>
-      </section>
+      <Avis />
+
+      <Garanties />
 
       <footer className="relative z-10 border-t border-noir/10 bg-card">
         <div className="mx-auto max-w-wrap px-6 py-12 text-sm text-noir/60">
