@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
-import { CONTENT_KEYS, updateSiteContent, removeSiteContent } from "./actions";
+import { updateSiteContent, removeSiteContent } from "./actions";
+import { CONTENT_KEYS } from "./content-keys";
 
 export default async function ContenuPage() {
   const supabase = createClient();
