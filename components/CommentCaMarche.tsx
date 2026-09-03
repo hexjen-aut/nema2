@@ -11,7 +11,7 @@ const steps = [
 
 export default function CommentCaMarche() {
   return (
-    <section className="relative z-10 bg-card py-20 md:py-28">
+    <section id="comment-ca-marche" className="relative z-10 bg-card py-20 md:py-28">
       <div className="mx-auto max-w-wrap px-6">
         <Reveal>
           <h2 className="font-display text-4xl md:text-5xl">De votre idée à votre pièce.</h2>
