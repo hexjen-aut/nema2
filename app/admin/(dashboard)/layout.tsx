@@ -6,10 +6,12 @@ const navItems = [
   { href: "/admin", label: "Tableau de bord" },
   { href: "/admin/commandes", label: "Commandes" },
   { href: "/admin/produits", label: "Produits" },
+  { href: "/admin/categories", label: "Catégories" },
   { href: "/admin/fils", label: "Fils" },
   { href: "/admin/prix", label: "Prix" },
   { href: "/admin/couleurs", label: "Couleurs" },
   { href: "/admin/options", label: "Options" },
+  { href: "/admin/contenu", label: "Contenu Home" },
   { href: "/admin/clients", label: "Clients" },
 ];
 
