@@ -40,6 +40,11 @@ export default async function Home() {
     .eq("is_active", true)
     .order("created_at", { ascending: false });
 
+  const { data: settingsRows } = await supabase.from("settings").select("key, value");
+  const content = new Map<string, string>(
+    (settingsRows || []).map((r: any) => [r.key, r.value?.image_url || null])
+  );
+
   const products = (rawProducts || []).map((p: any) => ({
     id: p.id,
     name: p.name,
@@ -57,7 +62,7 @@ export default async function Home() {
 
       <Navbar accountHref={accountHref} />
 
-      <Hero />
+      <Hero imageUrl={content.get("hero")} />
 
       <Univers />
 
@@ -69,7 +74,13 @@ export default async function Home() {
 
       <ProductsGrid products={products} categories={categories || []} />
 
-      <Creez />
+      <Creez
+        images={{
+          produit_vierge: content.get("creez_produit_vierge"),
+          personnalisation: content.get("creez_personnalisation"),
+          creation_finale: content.get("creez_creation_finale"),
+        }}
+      />
 
       <div className="relative z-10 mx-auto max-w-wrap px-6">
         <ChainDivider color="#5F6B4A" />
@@ -77,15 +88,22 @@ export default async function Home() {
 
       <Atelier />
 
-      <ApercuIA />
+      <ApercuIA avantUrl={content.get("apercu_avant")} apresUrl={content.get("apercu_apres")} />
 
       <CommentCaMarche />
 
-      <Histoire />
+      <Histoire imageUrl={content.get("histoire")} />
 
       <Philosophie />
 
-      <Situation />
+      <Situation
+        images={{
+          situation_look_1: content.get("situation_look_1"),
+          situation_look_2: content.get("situation_look_2"),
+          situation_look_3: content.get("situation_look_3"),
+          situation_look_4: content.get("situation_look_4"),
+        }}
+      />
 
       <Inspiration />
 
