@@ -57,13 +57,18 @@ export async function submitOrder(input: SubmitOrderInput) {
     return { error: "Impossible d'enregistrer la personnalisation." };
   }
 
-  // 2. Aperçu IA (si généré à l'étape précédente)
+  // 2. Aperçu IA (obligatoire côté UI, donc généralement toujours présent ici)
   if (input.generatedImageUrl) {
-    await supabase.from("generated_images").insert({
+    const { error: imageError } = await supabase.from("generated_images").insert({
       customization_id: customization.id,
       image_url: input.generatedImageUrl,
       is_validated: true,
     });
+
+    if (imageError) {
+      console.error("[submitOrder] erreur generated_images:", imageError.message);
+      return { error: "Impossible d'enregistrer l'aperçu généré." };
+    }
 
     await supabase
       .from("customizations")
