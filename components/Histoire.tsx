@@ -1,4 +1,5 @@
 import Reveal from "@/components/Reveal";
+import { stitchPattern } from "@/lib/placeholder-pattern";
 
 export default function Histoire({ imageUrl }: { imageUrl?: string | null }) {
   return (
@@ -10,7 +11,10 @@ export default function Histoire({ imageUrl }: { imageUrl?: string | null }) {
               // eslint-disable-next-line @next/next/no-img-element
               <img src={imageUrl} alt="L'histoire NEMA" className="h-full w-full object-cover" />
             ) : (
-              <div className="flex h-full items-center justify-center px-6 text-center text-xs text-noir/40">
+              <div
+                className="flex h-full items-center justify-center px-6 text-center text-xs text-noir/40"
+                style={stitchPattern("#171414")}
+              >
                 Photo à ajouter depuis l'admin — atelier, création ou portrait
               </div>
             )}

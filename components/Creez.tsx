@@ -1,4 +1,5 @@
 import Reveal from "@/components/Reveal";
+import { stitchPattern } from "@/lib/placeholder-pattern";
 
 const stages = [
   { key: "produit_vierge", label: "Produit vierge", note: "Le modèle avant personnalisation" },
@@ -39,7 +40,10 @@ export default function Creez({ images = {} }: { images?: Images }) {
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={imageUrl} alt={stage.label} className="h-full w-full object-cover" />
                       ) : (
-                        <div className="flex h-full items-center justify-center px-4 text-center text-xs text-noir/35">
+                        <div
+                          className="flex h-full items-center justify-center px-4 text-center text-xs text-noir/35"
+                          style={stitchPattern("#F58220")}
+                        >
                           Photo à ajouter depuis l'admin
                         </div>
                       )}

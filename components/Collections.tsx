@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Reveal from "@/components/Reveal";
 import TiltCard from "@/components/TiltCard";
+import { stitchPattern } from "@/lib/placeholder-pattern";
 
 type Category = {
   id: string;
@@ -48,7 +49,10 @@ export default function Collections({ categories }: { categories: Category[] }) 
                     className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]"
                   />
                 ) : (
-                  <div className="flex h-full items-center justify-center text-xs text-noir/40">
+                  <div
+                    className="flex h-full items-center justify-center text-xs text-noir/40"
+                    style={stitchPattern("#171414")}
+                  >
                     Photo à ajouter depuis l'admin
                   </div>
                 )}

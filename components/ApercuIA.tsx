@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Reveal from "@/components/Reveal";
+import { stitchPattern } from "@/lib/placeholder-pattern";
 
 export default function ApercuIA({
   avantUrl,
@@ -35,7 +36,10 @@ export default function ApercuIA({
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={avantUrl} alt="Avant — configuration" className="h-full w-full object-cover" />
                 ) : (
-                  <div className="flex h-full items-center justify-center text-xs text-noir/40">
+                  <div
+                    className="flex h-full items-center justify-center text-xs text-noir/40"
+                    style={stitchPattern("#171414")}
+                  >
                     Configuration en cours
                   </div>
                 )}
@@ -51,7 +55,10 @@ export default function ApercuIA({
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={apresUrl} alt="Après — rendu final" className="h-full w-full object-cover" />
                 ) : (
-                  <div className="flex h-full items-center justify-center text-xs text-noir/40">
+                  <div
+                    className="flex h-full items-center justify-center text-xs text-noir/40"
+                    style={stitchPattern("#F58220")}
+                  >
                     Aperçu généré à venir
                   </div>
                 )}
