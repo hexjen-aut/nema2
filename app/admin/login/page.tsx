@@ -3,6 +3,7 @@
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import Logo from "@/components/Logo";
 
 function LoginForm() {
   const router = useRouter();
@@ -58,8 +59,11 @@ function LoginForm() {
       onSubmit={handleSubmit}
       className="w-full max-w-sm rounded-2xl border border-ink/10 bg-card p-8"
     >
-      <p className="font-display text-2xl text-ink">Nema — Admin</p>
-      <p className="mt-1 text-sm text-ink/60">Connectez-vous pour gérer la boutique.</p>
+      <div className="flex justify-center">
+        <Logo />
+      </div>
+      <p className="mt-5 text-center font-display text-2xl text-ink">Nema — Admin</p>
+      <p className="mt-1 text-center text-sm text-ink/60">Connectez-vous pour gérer la boutique.</p>
 
       <div className="mt-6 space-y-4">
         <div>

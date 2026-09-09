@@ -1,4 +1,5 @@
 import Reveal from "@/components/Reveal";
+import { stitchPattern } from "@/lib/placeholder-pattern";
 
 const looks = [
   { key: "situation_look_1", number: "Look 01", name: "Minimal" },
@@ -27,7 +28,10 @@ export default function Situation({ images = {} }: { images?: Images }) {
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={imageUrl} alt={look.name} className="h-full w-full object-cover" />
                   ) : (
-                    <div className="flex h-full items-center justify-center px-4 text-center text-xs text-noir/40">
+                    <div
+                      className="flex h-full items-center justify-center px-4 text-center text-xs text-noir/40"
+                      style={stitchPattern("#171414")}
+                    >
                       Photo à ajouter depuis l'admin
                     </div>
                   )}
