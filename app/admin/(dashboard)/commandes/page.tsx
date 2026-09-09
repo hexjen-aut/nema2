@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { updateOrderStatus } from "./actions";
 import { STATUSES } from "./statuses";
+import OrderMessages from "@/components/OrderMessages";
 
 const STATUS_LABELS: Record<string, string> = {
   nouvelle: "Nouvelle",
@@ -31,7 +32,8 @@ export default async function CommandesPage() {
            secondary_color:secondary_color_id ( name ),
            generated_images ( image_url, is_validated )
          )
-       )`
+       ),
+       order_messages ( id, sender_role, body, created_at )`
     )
     .order("created_at", { ascending: false });
 
@@ -118,6 +120,17 @@ export default async function CommandesPage() {
                     Mettre à jour
                   </button>
                 </form>
+              </div>
+
+              <div className="md:col-span-3">
+                <OrderMessages
+                  orderId={o.id}
+                  role="admin"
+                  messages={(o.order_messages || []).slice().sort(
+                    (a: any, b: any) =>
+                      new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+                  )}
+                />
               </div>
             </div>
           );

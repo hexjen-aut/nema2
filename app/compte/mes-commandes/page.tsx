@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import OrderMessages from "@/components/OrderMessages";
 
 const STATUS_LABELS: Record<string, string> = {
   nouvelle: "Nouvelle",
@@ -34,7 +35,8 @@ export default async function MesCommandesPage() {
            primary_color:primary_color_id ( name ),
            generated_images ( image_url, is_validated )
          )
-       )`
+       ),
+       order_messages ( id, sender_role, body, created_at )`
     )
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
@@ -123,6 +125,15 @@ export default async function MesCommandesPage() {
                   {STATUS_LABELS[o.status] || o.status}
                 </p>
               )}
+
+              <OrderMessages
+                orderId={o.id}
+                role="client"
+                messages={(o.order_messages || []).slice().sort(
+                  (a: any, b: any) =>
+                    new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+                )}
+              />
             </div>
           );
         })}
