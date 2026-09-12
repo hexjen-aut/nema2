@@ -49,7 +49,7 @@ export default async function PersonnaliserIndexPage() {
 
       <section className="mx-auto max-w-wrap px-6 py-16">
         <Reveal>
-          <p className="mb-3 font-display italic text-flame">Personnaliser</p>
+          <p className="mb-3 font-display italic text-orange">Personnaliser</p>
           <h1 className="font-display text-4xl md:text-5xl">
             Choisissez un modèle, composez-le à votre image.
           </h1>

@@ -49,7 +49,7 @@ export default async function CollectionsPage() {
 
       <section className="mx-auto max-w-wrap px-6 py-16">
         <Reveal>
-          <p className="mb-3 font-display italic text-flame">Nos collections</p>
+          <p className="mb-3 font-display italic text-orange">Nos collections</p>
           <h1 className="font-display text-4xl md:text-5xl">
             Choisissez une famille de pièces à personnaliser.
           </h1>
