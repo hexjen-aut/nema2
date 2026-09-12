@@ -7,7 +7,7 @@ import { sendOrderConfirmationEmail, sendAdminNewOrderEmail } from "@/lib/email/
 type SubmitOrderInput = {
   productId: string;
   materialId: string | null;
-  materialColorId: string | null;
+  materialColorIds: string[];
   sizeId: string | null;
   optionIds: string[];
   totalPrice: number;
@@ -31,20 +31,22 @@ export async function submitOrder(input: SubmitOrderInput) {
 
   if (!user) redirect("/compte/connexion");
 
-  if (!input.materialId || !input.materialColorId) {
-    return { error: "Veuillez choisir un fil et une couleur avant de valider." };
+  if (!input.materialId || input.materialColorIds.length === 0) {
+    return { error: "Veuillez choisir un fil et au moins une couleur avant de valider." };
   }
 
   // 1. Enregistre la personnalisation
   // status: 'validated' correspond à la contrainte réelle sur nema.customizations
-  // ('draft' | 'previewed' | 'validated').
+  // ('draft' | 'previewed' | 'validated'). material_color_id garde la première
+  // couleur choisie pour compatibilité avec le code existant ; la liste
+  // complète est dans customization_colors.
   const { data: customization, error: customError } = await supabase
     .from("customizations")
     .insert({
       user_id: user.id,
       product_id: input.productId,
       material_id: input.materialId,
-      material_color_id: input.materialColorId,
+      material_color_id: input.materialColorIds[0],
       size_id: input.sizeId,
       selected_option_ids: input.optionIds,
       total_price: input.totalPrice,
@@ -56,6 +58,19 @@ export async function submitOrder(input: SubmitOrderInput) {
   if (customError || !customization) {
     console.error("[submitOrder] erreur customization:", customError?.message);
     return { error: "Impossible d'enregistrer la personnalisation." };
+  }
+
+  const { error: colorsError } = await supabase.from("customization_colors").insert(
+    input.materialColorIds.map((materialColorId, position) => ({
+      customization_id: customization.id,
+      material_color_id: materialColorId,
+      position,
+    }))
+  );
+
+  if (colorsError) {
+    console.error("[submitOrder] erreur customization_colors:", colorsError.message);
+    return { error: "Impossible d'enregistrer les couleurs choisies." };
   }
 
   // 2. Aperçu IA (obligatoire côté UI, donc généralement toujours présent ici)

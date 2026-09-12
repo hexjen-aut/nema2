@@ -1,13 +1,14 @@
 "use client";
 
 import { useRef, useState } from "react";
+import ImageCropModal from "@/components/admin/ImageCropModal";
 
 type Folder = "site-content" | "categories" | "products";
 
 type UploadedFile = { name: string; url: string };
 
 function uploadOne(
-  file: File,
+  file: File | Blob,
   folder: Folder,
   prefix: string | undefined,
   onProgress: (pct: number) => void
@@ -35,7 +36,7 @@ function uploadOne(
     xhr.onerror = () => reject(new Error("Erreur réseau pendant l'envoi."));
 
     const fd = new FormData();
-    fd.append("file", file);
+    fd.append("file", file, "image.jpg");
     fd.append("folder", folder);
     if (prefix) fd.append("prefix", prefix);
     xhr.send(fd);
@@ -43,9 +44,11 @@ function uploadOne(
 }
 
 // Champ d'envoi d'image(s) avec barre de progression réelle (suivi des
-// octets envoyés). Une fois l'envoi terminé, l'URL obtenue est déposée
-// dans un champ caché du formulaire parent — le reste du formulaire
-// (nom, description...) se soumet ensuite normalement.
+// octets envoyés). Si "aspect" est fourni (mode simple photo), l'utilisatrice
+// cadre d'abord l'image dans le rapport largeur/hauteur utilisé sur le site
+// avant l'envoi. Une fois l'envoi terminé, l'URL obtenue est déposée dans un
+// champ caché du formulaire parent — le reste du formulaire (nom,
+// description...) se soumet ensuite normalement.
 export default function ImageUploadField({
   name,
   folder,
@@ -53,6 +56,7 @@ export default function ImageUploadField({
   label = "Image",
   multiple = false,
   accept = "image/*",
+  aspect,
 }: {
   name: string;
   folder: Folder;
@@ -60,16 +64,15 @@ export default function ImageUploadField({
   label?: string;
   multiple?: boolean;
   accept?: string;
+  aspect?: number;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [progress, setProgress] = useState<number | null>(null);
   const [uploaded, setUploaded] = useState<UploadedFile[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [cropFile, setCropFile] = useState<File | null>(null);
 
-  async function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(e.target.files || []);
-    if (files.length === 0) return;
-
+  async function uploadFiles(files: (File | Blob)[], names: string[]) {
     setError(null);
     setUploaded([]);
     setProgress(0);
@@ -79,12 +82,13 @@ export default function ImageUploadField({
     let bytesDoneBeforeCurrent = 0;
 
     try {
-      for (const file of files) {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
         const url = await uploadOne(file, folder, prefix, (pct) => {
           const currentBytes = (pct / 100) * file.size;
           setProgress(Math.round(((bytesDoneBeforeCurrent + currentBytes) / totalBytes) * 100));
         });
-        results.push({ name: file.name, url });
+        results.push({ name: names[i], url });
         bytesDoneBeforeCurrent += file.size;
       }
       setUploaded(results);
@@ -93,6 +97,29 @@ export default function ImageUploadField({
       setError(err instanceof Error ? err.message : "Échec de l'envoi.");
       setProgress(null);
     }
+  }
+
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    if (aspect && !multiple) {
+      setCropFile(files[0]);
+      return;
+    }
+
+    uploadFiles(files, files.map((f) => f.name));
+  }
+
+  function cancelCrop() {
+    setCropFile(null);
+    if (inputRef.current) inputRef.current.value = "";
+  }
+
+  function confirmCrop(blob: Blob) {
+    const name = cropFile?.name || "image.jpg";
+    setCropFile(null);
+    uploadFiles([blob], [name]);
   }
 
   const uploading = progress !== null && progress < 100;
@@ -109,6 +136,10 @@ export default function ImageUploadField({
         disabled={uploading}
         className="mt-1 w-full text-xs disabled:opacity-50"
       />
+
+      {cropFile && (
+        <ImageCropModal file={cropFile} aspect={aspect!} onCancel={cancelCrop} onConfirm={confirmCrop} />
+      )}
 
       {progress !== null && (
         <div className="mt-2">

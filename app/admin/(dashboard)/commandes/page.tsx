@@ -29,8 +29,8 @@ export default async function CommandesPage() {
          customizations (
            selected_option_ids,
            product_sizes ( name ),
-           primary_color:primary_color_id ( name ),
-           secondary_color:secondary_color_id ( name ),
+           fallback_color:material_color_id ( name ),
+           customization_colors ( position, material_colors ( name ) ),
            generated_images ( image_url, is_validated )
          )
        ),
@@ -49,6 +49,12 @@ export default async function CommandesPage() {
           const image =
             custom?.generated_images?.find((g: any) => g.is_validated)?.image_url ||
             custom?.generated_images?.[0]?.image_url;
+          const colorNames = (custom?.customization_colors?.length
+            ? [...custom.customization_colors]
+                .sort((a: any, b: any) => a.position - b.position)
+                .map((cc: any) => cc.material_colors?.name)
+            : [custom?.fallback_color?.name]
+          ).filter(Boolean);
 
           return (
             <div
@@ -77,11 +83,9 @@ export default async function CommandesPage() {
                   {o.addresses?.address}, {o.addresses?.city} {o.addresses?.country}
                 </p>
                 <p className="mt-2 text-ink/70">
-                  Taille : {custom?.product_sizes?.name || "—"} · Couleur :{" "}
-                  {custom?.primary_color?.name || "—"}
-                  {custom?.secondary_color?.name
-                    ? ` / ${custom.secondary_color.name}`
-                    : ""}
+                  Taille : {custom?.product_sizes?.name || "—"} · Couleur
+                  {colorNames.length > 1 ? "s" : ""} :{" "}
+                  {colorNames.length > 0 ? colorNames.join(" + ") : "—"}
                 </p>
                 {o.comments && (
                   <p className="mt-2 text-ink/50 italic">"{o.comments}"</p>

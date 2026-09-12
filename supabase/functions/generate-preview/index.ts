@@ -17,15 +17,12 @@ const corsHeaders = {
 type PreviewRequest = {
   productName: string;
   sizeName?: string | null;
-  primaryColorName?: string | null;
-  secondaryColorName?: string | null;
+  colorNames?: string[];
   optionNames?: string[];
 };
 
 function buildPrompt(input: PreviewRequest): string {
-  const colors = [input.primaryColorName, input.secondaryColorName]
-    .filter(Boolean)
-    .join(" et ");
+  const colors = (input.colorNames ?? []).filter(Boolean).join(" et ");
   const options = input.optionNames?.length
     ? `, avec ${input.optionNames.join(", ")}`
     : "";
