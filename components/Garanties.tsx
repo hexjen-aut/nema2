@@ -4,9 +4,9 @@ function IconAdjust() {
   return (
     <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
       <path d="M4 6h14M4 11h14M4 16h14" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-      <circle cx="9" cy="6" r="1.8" fill="#FFFDF9" stroke="currentColor" strokeWidth="1.3" />
-      <circle cx="15" cy="11" r="1.8" fill="#FFFDF9" stroke="currentColor" strokeWidth="1.3" />
-      <circle cx="8" cy="16" r="1.8" fill="#FFFDF9" stroke="currentColor" strokeWidth="1.3" />
+      <circle cx="9" cy="6" r="1.8" fill="#FBF6EF" stroke="currentColor" strokeWidth="1.3" />
+      <circle cx="15" cy="11" r="1.8" fill="#FBF6EF" stroke="currentColor" strokeWidth="1.3" />
+      <circle cx="8" cy="16" r="1.8" fill="#FBF6EF" stroke="currentColor" strokeWidth="1.3" />
     </svg>
   );
 }

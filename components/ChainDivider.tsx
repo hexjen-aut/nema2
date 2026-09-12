@@ -7,7 +7,7 @@ type Props = {
 };
 
 // Motif signature du site : une chaînette crochet qui se dessine à l'entrée dans le viewport.
-export default function ChainDivider({ color = "#A85D3B", className = "" }: Props) {
+export default function ChainDivider({ color = "#A9683A", className = "" }: Props) {
   const ref = useRef<SVGSVGElement>(null);
   const [visible, setVisible] = useState(false);
 

@@ -37,7 +37,8 @@ export default function ProductsGrid({
   return (
     <section className="relative z-10 mx-auto max-w-wrap px-6 py-20 md:py-28">
       <Reveal>
-        <h2 className="font-display text-4xl md:text-5xl">Les créations NEMA</h2>
+        <p className="text-xs tracking-label text-orange">NEMA</p>
+        <h2 className="mt-3 font-display text-4xl md:text-5xl">Catalogue</h2>
         <p className="mt-3 max-w-md text-noir/70">
           Découvrez les pièces disponibles et imaginez-les à votre manière.
         </p>
@@ -73,11 +74,11 @@ export default function ProductsGrid({
         </div>
       </Reveal>
 
-      <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-10 grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
         {filtered.map((p, i) => (
           <Reveal key={p.id} delay={i * 70}>
-            <TiltCard className="group overflow-hidden rounded-2xl border border-noir/10 bg-card hover:border-orange">
-              <div className="aspect-square overflow-hidden bg-rose">
+            <TiltCard className="group">
+              <div className="aspect-square overflow-hidden rounded-2xl bg-rose">
                 {p.image ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -88,13 +89,13 @@ export default function ProductsGrid({
                 ) : (
                   <div
                     className="flex h-full items-center justify-center text-xs text-noir/40"
-                    style={stitchPattern("#171414")}
+                    style={stitchPattern("#2B1810")}
                   >
                     Photo à ajouter depuis l'admin
                   </div>
                 )}
               </div>
-              <div className="p-5">
+              <div className="pt-4">
                 {p.category_name && (
                   <p className="text-xs tracking-label text-orange">{p.category_name}</p>
                 )}
@@ -104,9 +105,9 @@ export default function ProductsGrid({
                 </p>
                 <Link
                   href={`/personnaliser/${p.id}`}
-                  className="mt-4 inline-block rounded-full bg-orange px-5 py-2 text-xs text-ivoire hover:bg-noir transition-colors"
+                  className="mt-3 inline-block text-sm text-orange hover:text-noir transition-colors"
                 >
-                  Personnaliser
+                  Personnaliser →
                 </Link>
               </div>
             </TiltCard>

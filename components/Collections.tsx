@@ -51,7 +51,7 @@ export default function Collections({ categories }: { categories: Category[] }) 
                 ) : (
                   <div
                     className="flex h-full items-center justify-center text-xs text-noir/40"
-                    style={stitchPattern("#171414")}
+                    style={stitchPattern("#2B1810")}
                   >
                     Photo à ajouter depuis l'admin
                   </div>

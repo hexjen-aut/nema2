@@ -1,11 +1,11 @@
 import { getResendClient, EMAIL_FROM, ADMIN_EMAIL } from "@/lib/resend";
 
 const COLORS = {
-  ivoire: "#FFFDF9",
-  rose: "#F9E7E5",
-  orange: "#F58220",
-  noir: "#171414",
-  champagne: "#D8C3B0",
+  ivoire: "#FBF6EF",
+  rose: "#F1E4D6",
+  orange: "#A9683A",
+  noir: "#2B1810",
+  champagne: "#D7C6B5",
 };
 
 function wrapper(title: string, bodyHtml: string) {

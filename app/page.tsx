@@ -64,15 +64,17 @@ export default async function Home() {
 
       <Hero imageUrl={content.get("hero")} />
 
-      <Univers />
+      <ProductsGrid products={products} categories={categories || []} />
+
+      <Philosophie imageUrl={content.get("philosophie")} />
 
       <div className="relative z-10 mx-auto max-w-wrap px-6">
-        <ChainDivider color="#F58220" />
+        <ChainDivider color="#A9683A" />
       </div>
 
-      <Collections categories={categories || []} />
+      <Univers />
 
-      <ProductsGrid products={products} categories={categories || []} />
+      <Collections categories={categories || []} />
 
       <Creez
         images={{
@@ -94,8 +96,6 @@ export default async function Home() {
 
       <Histoire imageUrl={content.get("histoire")} />
 
-      <Philosophie />
-
       <Situation
         images={{
           situation_look_1: content.get("situation_look_1"),
@@ -108,7 +108,7 @@ export default async function Home() {
       <Inspiration />
 
       <div className="relative z-10 mx-auto max-w-wrap px-6">
-        <ChainDivider color="#F58220" />
+        <ChainDivider color="#A9683A" />
       </div>
 
       <Avis />

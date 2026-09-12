@@ -38,7 +38,7 @@ export default function ApercuIA({
                 ) : (
                   <div
                     className="flex h-full items-center justify-center text-xs text-noir/40"
-                    style={stitchPattern("#171414")}
+                    style={stitchPattern("#2B1810")}
                   >
                     Configuration en cours
                   </div>
@@ -57,7 +57,7 @@ export default function ApercuIA({
                 ) : (
                   <div
                     className="flex h-full items-center justify-center text-xs text-noir/40"
-                    style={stitchPattern("#F58220")}
+                    style={stitchPattern("#A9683A")}
                   >
                     Aperçu généré à venir
                   </div>

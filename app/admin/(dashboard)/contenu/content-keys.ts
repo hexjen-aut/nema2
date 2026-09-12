@@ -1,5 +1,6 @@
 export const CONTENT_KEYS = [
   { key: "hero", label: "Hero", section: "Accueil" },
+  { key: "philosophie", label: "Notre philosophie", section: "Accueil" },
   { key: "creez_produit_vierge", label: "Créez — Produit vierge", section: "Section Créez" },
   { key: "creez_personnalisation", label: "Créez — Personnalisation", section: "Section Créez" },
   { key: "creez_creation_finale", label: "Créez — Création finale", section: "Section Créez" },
