@@ -12,35 +12,6 @@ function slugify(name: string) {
     .replace(/(^-|-$)/g, "");
 }
 
-async function uploadProductImage(
-  supabase: ReturnType<typeof createClient>,
-  productId: string,
-  file: File,
-  position: number
-) {
-  const ext = file.name.split(".").pop() || "jpg";
-  const path = `${productId}/${Date.now()}-${position}.${ext}`;
-
-  const { error: uploadError } = await supabase.storage
-    .from("nema-products")
-    .upload(path, file, { contentType: file.type, upsert: false });
-
-  if (uploadError) {
-    console.error("[uploadProductImage] erreur upload:", uploadError.message);
-    return;
-  }
-
-  const {
-    data: { publicUrl },
-  } = supabase.storage.from("nema-products").getPublicUrl(path);
-
-  await supabase.from("product_images").insert({
-    product_id: productId,
-    url: publicUrl,
-    position,
-  });
-}
-
 export async function createProduct(formData: FormData) {
   const supabase = createClient();
   const name = String(formData.get("name") || "");
@@ -67,11 +38,11 @@ export async function createProduct(formData: FormData) {
     return;
   }
 
-  const images = formData.getAll("images") as File[];
-  const validImages = images.filter((f) => f && f.size > 0);
-
-  for (let i = 0; i < validImages.length; i++) {
-    await uploadProductImage(supabase, product.id, validImages[i], i);
+  const imageUrls = (formData.getAll("images_url") as string[]).filter((u) => u.trim());
+  if (imageUrls.length > 0) {
+    await supabase.from("product_images").insert(
+      imageUrls.map((url, i) => ({ product_id: product.id, url, position: i }))
+    );
   }
 
   // Tailles saisies dans le formulaire de création (optionnel, jusqu'à 4 lignes).
@@ -100,15 +71,17 @@ export async function createProduct(formData: FormData) {
 
 export async function addProductImage(productId: string, formData: FormData) {
   const supabase = createClient();
-  const file = formData.get("image") as File | null;
-  if (!file || file.size === 0) return;
+  const imageUrl = String(formData.get("image_url") || "").trim();
+  if (!imageUrl) return;
 
   const { count } = await supabase
     .from("product_images")
     .select("id", { count: "exact", head: true })
     .eq("product_id", productId);
 
-  await uploadProductImage(supabase, productId, file, count || 0);
+  await supabase
+    .from("product_images")
+    .insert({ product_id: productId, url: imageUrl, position: count || 0 });
   revalidatePath("/admin/produits");
 }
 

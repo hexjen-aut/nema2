@@ -1,5 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { createCategory, updateCategory, deleteCategory } from "./actions";
+import ImageUploadField from "@/components/admin/ImageUploadField";
+import HelpTip from "@/components/admin/HelpTip";
 
 export default async function CategoriesPage() {
   const supabase = createClient();
@@ -19,7 +21,6 @@ export default async function CategoriesPage() {
 
       <form
         action={createCategory}
-        encType="multipart/form-data"
         className="mt-6 grid gap-3 rounded-2xl border border-ink/10 bg-card p-5 sm:grid-cols-2 md:grid-cols-4"
       >
         <input
@@ -35,15 +36,10 @@ export default async function CategoriesPage() {
           defaultValue={0}
           className="rounded-lg border border-ink/15 bg-linen px-3 py-2 text-sm"
         />
-        <input
-          name="image"
-          type="file"
-          accept="image/*"
-          className="rounded-lg border border-ink/15 bg-linen px-3 py-2 text-sm"
-        />
+        <ImageUploadField name="image_url" folder="categories" label="" />
         <button
           type="submit"
-          className="rounded-lg bg-clay px-4 py-2 text-sm text-card hover:bg-ink transition-colors"
+          className="h-fit rounded-lg bg-clay px-4 py-2 text-sm text-card hover:bg-ink transition-colors"
         >
           Ajouter
         </button>
@@ -69,7 +65,7 @@ export default async function CategoriesPage() {
               )}
             </div>
 
-            <form action={updateCategory.bind(null, c.id)} encType="multipart/form-data" className="space-y-2 text-sm">
+            <form action={updateCategory.bind(null, c.id)} className="space-y-2 text-sm">
               <input
                 name="name"
                 defaultValue={c.name}
@@ -94,26 +90,23 @@ export default async function CategoriesPage() {
                   {(c.products || []).length} produit(s)
                 </span>
               </div>
-              <input
-                name="image"
-                type="file"
-                accept="image/*"
-                className="w-full rounded-lg border border-ink/15 bg-linen px-3 py-2 text-xs"
-              />
-              <div className="flex gap-2 pt-1">
+              <ImageUploadField name="image_url" folder="categories" prefix={c.id} label="Changer la photo" />
+              <div className="flex items-center gap-2 pt-1">
                 <button
                   type="submit"
                   className="flex-1 rounded-full bg-clay px-4 py-2 text-xs text-card hover:bg-ink transition-colors"
                 >
                   Enregistrer
                 </button>
+                <HelpTip text="Enregistre le nom, la description, l'ordre d'affichage et la nouvelle photo (si vous en avez envoyé une)." />
               </div>
             </form>
 
-            <form action={deleteCategory.bind(null, c.id)} className="mt-2">
+            <form action={deleteCategory.bind(null, c.id)} className="mt-2 flex items-center gap-1.5">
               <button type="submit" className="text-xs text-ink/40 hover:text-red-700">
                 Supprimer la catégorie
               </button>
+              <HelpTip text="Supprime définitivement cette catégorie. Les produits qui y étaient rattachés ne seront plus classés dans aucune catégorie." />
             </form>
           </div>
         ))}

@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { updateSiteContent, removeSiteContent } from "./actions";
 import { CONTENT_KEYS } from "./content-keys";
+import ImageUploadField from "@/components/admin/ImageUploadField";
+import HelpTip from "@/components/admin/HelpTip";
 
 export default async function ContenuPage() {
   const supabase = createClient();
@@ -39,19 +41,15 @@ export default async function ContenuPage() {
                       </div>
                     )}
                   </div>
-                  <p className="text-sm">{c.label}</p>
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-sm">{c.label}</p>
+                    <HelpTip text="Cette photo s'affiche à cet endroit précis sur la page d'accueil du site. Choisissez un fichier, attendez la barre de progression, puis cliquez sur Envoyer." />
+                  </div>
 
-                  <form
-                    action={updateSiteContent.bind(null, c.key)}
-                    encType="multipart/form-data"
-                    className="mt-3 flex items-center gap-2"
-                  >
-                    <input
-                      type="file"
-                      name="image"
-                      accept="image/*"
-                      className="w-full text-xs"
-                    />
+                  <form action={updateSiteContent.bind(null, c.key)} className="mt-3 flex items-end gap-2">
+                    <div className="flex-1">
+                      <ImageUploadField name="image_url" folder="site-content" prefix={c.key} label="" />
+                    </div>
                     <button
                       type="submit"
                       className="shrink-0 rounded-full bg-clay px-3 py-1.5 text-xs text-card hover:bg-ink transition-colors"
@@ -61,10 +59,11 @@ export default async function ContenuPage() {
                   </form>
 
                   {imageUrl && (
-                    <form action={removeSiteContent.bind(null, c.key)} className="mt-2">
+                    <form action={removeSiteContent.bind(null, c.key)} className="mt-2 flex items-center gap-1.5">
                       <button type="submit" className="text-xs text-ink/40 hover:text-red-700">
                         Retirer l'image
                       </button>
+                      <HelpTip text="Supprime la photo actuelle. Le site affichera un emplacement réservé à la place, tant qu'aucune nouvelle photo n'est envoyée." />
                     </form>
                   )}
                 </div>

@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { updateOrderStatus } from "./actions";
 import { STATUSES } from "./statuses";
 import OrderMessages from "@/components/OrderMessages";
+import HelpTip from "@/components/admin/HelpTip";
 
 const STATUS_LABELS: Record<string, string> = {
   nouvelle: "Nouvelle",
@@ -119,6 +120,7 @@ export default async function CommandesPage() {
                   >
                     Mettre à jour
                   </button>
+                  <HelpTip text="Change l'étape de la commande (nouvelle, en cours, fabrication, expédiée...). La cliente voit ce statut depuis son compte." />
                 </form>
               </div>
 
