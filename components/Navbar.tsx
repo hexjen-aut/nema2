@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import Logo from "@/components/Logo";
 
 const NAV_LINKS = [
   { href: "/", label: "Accueil" },
@@ -98,7 +98,16 @@ export default function Navbar({ accountHref }: { accountHref: string }) {
         </nav>
 
         <Link href="/" aria-label="Accueil NEMA" className="justify-self-center">
-          <Logo size={scrolled ? "md" : "lg"} className="transition-all duration-300" />
+          <Image
+            src="/nema-logo.png"
+            alt="NEMA"
+            width={160}
+            height={160}
+            priority
+            className={`rounded-full object-cover ring-1 ring-noir/10 transition-all duration-300 ${
+              scrolled ? "h-10 w-10" : "h-14 w-14"
+            }`}
+          />
         </Link>
 
         <div className="flex items-center justify-end gap-6">
