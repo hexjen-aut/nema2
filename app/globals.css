@@ -27,21 +27,10 @@ body {
   color: #F3E7D5;
 }
 
-/* --- Fond du site : vagues cuivre/champagne, dans le ton papier du logo --- */
+/* --- Fond du site : beige uni, dans le ton papier du logo --- */
 
 .bg-nema-motif {
-  background-color: #EADDC9;
-  background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='84'%3E%3Cpath d='M0 42 C45 24 135 60 180 42 L180 58 C135 76 45 40 0 58 Z' fill='%23A9683A' opacity='0.22'/%3E%3C/svg%3E"),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='130' height='62'%3E%3Cpath d='M0 31 C32.5 18 97.5 44 130 31 L130 43 C97.5 56 32.5 30 0 43 Z' fill='%23D7C6B5' opacity='0.32'/%3E%3C/svg%3E");
-  background-size: 180px 84px, 130px 62px;
-  background-position: 0 0, 0 18px;
-  animation: nema-wave-drift 30s linear infinite;
-}
-
-@keyframes nema-wave-drift {
-  0% { background-position: 0 0, 0 18px; }
-  100% { background-position: 180px 0, -130px 18px; }
+  background-color: #F3E7D5;
 }
 
 /* --- Révélations douces au scroll --- */
