@@ -44,7 +44,7 @@ const columns = [
 
 export default function Footer() {
   return (
-    <footer className="relative z-10 border-t border-noir/10 bg-card">
+    <footer className="bg-nema-motif relative z-10 border-t border-noir/10">
       <div className="mx-auto max-w-wrap px-6 py-16">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-5">
           <div className="lg:col-span-1">

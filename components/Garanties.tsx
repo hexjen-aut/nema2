@@ -4,9 +4,9 @@ function IconAdjust() {
   return (
     <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
       <path d="M4 6h14M4 11h14M4 16h14" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-      <circle cx="9" cy="6" r="1.8" fill="#FBF6EF" stroke="currentColor" strokeWidth="1.3" />
-      <circle cx="15" cy="11" r="1.8" fill="#FBF6EF" stroke="currentColor" strokeWidth="1.3" />
-      <circle cx="8" cy="16" r="1.8" fill="#FBF6EF" stroke="currentColor" strokeWidth="1.3" />
+      <circle cx="9" cy="6" r="1.8" fill="#F3E7D5" stroke="currentColor" strokeWidth="1.3" />
+      <circle cx="15" cy="11" r="1.8" fill="#F3E7D5" stroke="currentColor" strokeWidth="1.3" />
+      <circle cx="8" cy="16" r="1.8" fill="#F3E7D5" stroke="currentColor" strokeWidth="1.3" />
     </svg>
   );
 }
@@ -61,7 +61,7 @@ const items = [
 
 export default function Garanties() {
   return (
-    <section className="relative z-10 bg-card py-20">
+    <section className="bg-nema-motif relative z-10 py-20">
       <div className="mx-auto max-w-wrap px-6">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           {items.map((item, i) => {
