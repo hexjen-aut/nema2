@@ -32,7 +32,8 @@ export default async function MesCommandesPage() {
          products ( name ),
          customizations (
            product_sizes ( name ),
-           primary_color:primary_color_id ( name ),
+           fallback_color:material_color_id ( name ),
+           customization_colors ( position, material_colors ( name ) ),
            generated_images ( image_url, is_validated )
          )
        ),
@@ -63,6 +64,12 @@ export default async function MesCommandesPage() {
           const image =
             custom?.generated_images?.find((g: any) => g.is_validated)?.image_url ||
             custom?.generated_images?.[0]?.image_url;
+          const colorNames = (custom?.customization_colors?.length
+            ? [...custom.customization_colors]
+                .sort((a: any, b: any) => a.position - b.position)
+                .map((cc: any) => cc.material_colors?.name)
+            : [custom?.fallback_color?.name]
+          ).filter(Boolean);
           const currentStepIndex = STATUS_STEPS.indexOf(o.status);
           const isCancelled = o.status === "annulee";
 
@@ -93,8 +100,9 @@ export default async function MesCommandesPage() {
                     </p>
                   </div>
                   <p className="mt-1 text-sm text-ink/60">
-                    Taille : {custom?.product_sizes?.name || "—"} · Couleur :{" "}
-                    {custom?.primary_color?.name || "—"}
+                    Taille : {custom?.product_sizes?.name || "—"} · Couleur
+                    {colorNames.length > 1 ? "s" : ""} :{" "}
+                    {colorNames.length > 0 ? colorNames.join(" + ") : "—"}
                   </p>
                   <p className="text-sm text-ink/50">
                     {o.deposit_paid ? "Acompte payé" : "Acompte en attente"}

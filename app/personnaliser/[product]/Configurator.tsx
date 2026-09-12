@@ -109,7 +109,7 @@ export default function Configurator({ product }: { product: Product }) {
     [selectedMaterial]
   );
 
-  const [materialColorId, setMaterialColorId] = useState<string | null>(null);
+  const [materialColorIds, setMaterialColorIds] = useState<string[]>([]);
   const hasSizes = product.product_sizes.length > 0;
   const [sizeId, setSizeId] = useState<string | null>(product.product_sizes[0]?.id ?? null);
   const [optionIds, setOptionIds] = useState<string[]>([]);
@@ -143,7 +143,7 @@ export default function Configurator({ product }: { product: Product }) {
   const availableOptions = product.product_options.filter((o) => o.is_available);
   const selectedSize = product.product_sizes.find((s) => s.id === sizeId);
   const selectedOptions = availableOptions.filter((o) => optionIds.includes(o.id));
-  const selectedColor = availableColors.find((c) => c.id === materialColorId);
+  const selectedColors = availableColors.filter((c) => materialColorIds.includes(c.id));
 
   const unitPrice = useMemo(() => {
     const materialDelta = Number(selectedMaterial?.price_delta || 0);
@@ -161,12 +161,12 @@ export default function Configurator({ product }: { product: Product }) {
   const completedCount = useMemo(() => {
     let n = 0;
     if (materialId) n++;
-    if (materialColorId) n++;
+    if (materialColorIds.length > 0) n++;
     if (!hasSizes || sizeId) n++;
     if (optionIds.length > 0 || openSections.options) n++;
     if (comments.trim().length > 0 || openSections.personnalisation) n++;
     return n;
-  }, [materialId, materialColorId, hasSizes, sizeId, optionIds, comments, openSections]);
+  }, [materialId, materialColorIds, hasSizes, sizeId, optionIds, comments, openSections]);
 
   function toggleOption(id: string) {
     setOptionIds((prev) =>
@@ -176,12 +176,14 @@ export default function Configurator({ product }: { product: Product }) {
 
   function handleSelectMaterial(id: string) {
     setMaterialId(id);
-    setMaterialColorId(null);
+    setMaterialColorIds([]);
     setGeneratedImageUrl(null);
   }
 
-  function handleSelectColor(id: string) {
-    setMaterialColorId(id);
+  function handleToggleColor(id: string) {
+    setMaterialColorIds((prev) =>
+      prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]
+    );
     setGeneratedImageUrl(null);
   }
 
@@ -195,7 +197,7 @@ export default function Configurator({ product }: { product: Product }) {
         body: {
           productName: product.name,
           sizeName: selectedSize?.name ?? null,
-          primaryColorName: selectedColor?.name ?? null,
+          colorNames: selectedColors.map((c) => c.name),
           optionNames: selectedOptions.map((o) => o.name),
           baseImageUrl: product.product_images[0]?.url ?? null,
         },
@@ -218,7 +220,7 @@ export default function Configurator({ product }: { product: Product }) {
 
   const canValidate = Boolean(
     materialId &&
-      materialColorId &&
+      materialColorIds.length > 0 &&
       (!hasSizes || sizeId) &&
       generatedImageUrl &&
       addressLine &&
@@ -234,7 +236,7 @@ export default function Configurator({ product }: { product: Product }) {
     const result = await submitOrder({
       productId: product.id,
       materialId,
-      materialColorId,
+      materialColorIds,
       sizeId,
       optionIds,
       totalPrice: unitPrice,
@@ -328,36 +330,45 @@ export default function Configurator({ product }: { product: Product }) {
 
             <AccordionSection
               title="Couleur"
-              subtitle="Choisissez votre humeur."
+              subtitle="Choisissez votre humeur — plusieurs couleurs possibles."
               isOpen={openSections.couleur}
               onToggle={() => toggleSection("couleur")}
               disabled={!selectedMaterial}
             >
               <div className="flex flex-wrap gap-3">
-                {availableColors.map((c) => (
-                  <button
-                    key={c.id}
-                    type="button"
-                    onClick={() => handleSelectColor(c.id)}
-                    className="flex flex-col items-center gap-1"
-                  >
-                    <span
-                      className={`relative h-10 w-10 overflow-hidden rounded-full border-2 transition-all ${
-                        materialColorId === c.id ? "border-orange scale-110" : "border-noir/10"
-                      }`}
-                      style={{ backgroundColor: c.hex || "#eee" }}
+                {availableColors.map((c) => {
+                  const isSelected = materialColorIds.includes(c.id);
+                  return (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => handleToggleColor(c.id)}
+                      aria-pressed={isSelected}
+                      className="flex flex-col items-center gap-1"
                     >
-                      {c.swatch_image_url && (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={c.swatch_image_url} alt="" className="h-full w-full object-cover" />
+                      <span
+                        className={`relative h-10 w-10 overflow-hidden rounded-full border-2 transition-all ${
+                          isSelected ? "border-orange scale-110" : "border-noir/10"
+                        }`}
+                        style={{ backgroundColor: c.hex || "#eee" }}
+                      >
+                        {c.swatch_image_url && (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={c.swatch_image_url} alt="" className="h-full w-full object-cover" />
+                        )}
+                        {isSelected && (
+                          <span className="absolute inset-0 flex items-center justify-center bg-noir/20 text-xs text-ivoire">
+                            ✓
+                          </span>
+                        )}
+                      </span>
+                      <span className="text-[11px] text-noir/60">{c.name}</span>
+                      {c.stock_status === "low_stock" && (
+                        <span className="text-[10px] text-champagne">Stock limité</span>
                       )}
-                    </span>
-                    <span className="text-[11px] text-noir/60">{c.name}</span>
-                    {c.stock_status === "low_stock" && (
-                      <span className="text-[10px] text-champagne">Stock limité</span>
-                    )}
-                  </button>
-                ))}
+                    </button>
+                  );
+                })}
                 {availableColors.length === 0 && (
                   <p className="text-sm text-noir/50">
                     Aucune couleur disponible pour ce fil.
@@ -493,11 +504,14 @@ export default function Configurator({ product }: { product: Product }) {
                 {selectedMaterial.name}
               </span>
             )}
-            {selectedColor && (
-              <span className="rounded-full border border-noir/15 px-3 py-1 text-xs text-noir/60">
-                {selectedColor.name}
+            {selectedColors.map((c) => (
+              <span
+                key={c.id}
+                className="rounded-full border border-noir/15 px-3 py-1 text-xs text-noir/60"
+              >
+                {c.name}
               </span>
-            )}
+            ))}
             {hasSizes && selectedSize && (
               <span className="rounded-full border border-noir/15 px-3 py-1 text-xs text-noir/60">
                 {selectedSize.name}
@@ -509,7 +523,10 @@ export default function Configurator({ product }: { product: Product }) {
             <p className="font-display text-lg">Voyez-la avant qu'elle existe.</p>
             <p className="mt-1 text-sm text-noir/60">
               Générez un aperçu IA de votre pièce en « {selectedMaterial?.name || "—"} /{" "}
-              {selectedColor?.name || "—"} » — nécessaire pour valider votre commande.
+              {selectedColors.length > 0
+                ? selectedColors.map((c) => c.name).join(" + ")
+                : "—"}{" "}
+              » — nécessaire pour valider votre commande.
             </p>
             {generationError && (
               <p className="mt-3 text-sm text-red-700">{generationError}</p>
@@ -517,7 +534,7 @@ export default function Configurator({ product }: { product: Product }) {
             <button
               type="button"
               onClick={handleGeneratePreview}
-              disabled={generating || !materialId || !materialColorId}
+              disabled={generating || !materialId || materialColorIds.length === 0}
               className="mt-4 rounded-full bg-orange px-6 py-2.5 text-sm text-ivoire hover:bg-noir transition-colors disabled:opacity-50"
             >
               {generating
@@ -536,7 +553,12 @@ export default function Configurator({ product }: { product: Product }) {
           <ul className="space-y-1.5 text-sm text-noir/70">
             <li>Produit : {product.name}</li>
             <li>Fil : {selectedMaterial?.name || "—"}</li>
-            <li>Couleur : {selectedColor?.name || "—"}</li>
+            <li>
+              Couleur{selectedColors.length > 1 ? "s" : ""} :{" "}
+              {selectedColors.length > 0
+                ? selectedColors.map((c) => c.name).join(" + ")
+                : "—"}
+            </li>
             {hasSizes && <li>Taille : {selectedSize?.name || "—"}</li>}
             <li>
               Options :{" "}
