@@ -25,7 +25,7 @@ export default function HeroCarousel({ images }: { images: (string | null | unde
   }
 
   return (
-    <div className="relative min-h-[50vh] overflow-hidden md:min-h-0">
+    <div className="absolute inset-0 overflow-hidden">
       {images.map((url, i) => (
         <div
           key={i}
