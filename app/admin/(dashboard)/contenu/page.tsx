@@ -48,7 +48,13 @@ export default async function ContenuPage() {
 
                   <form action={updateSiteContent.bind(null, c.key)} className="mt-3 flex items-end gap-2">
                     <div className="flex-1">
-                      <ImageUploadField name="image_url" folder="site-content" prefix={c.key} label="" />
+                      <ImageUploadField
+                        name="image_url"
+                        folder="site-content"
+                        prefix={c.key}
+                        label=""
+                        aspect={c.aspect}
+                      />
                     </div>
                     <button
                       type="submit"

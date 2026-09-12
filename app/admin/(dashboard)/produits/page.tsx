@@ -158,7 +158,13 @@ export default async function ProduitsPage() {
                       ))}
                       <form action={addProductImage.bind(null, p.id)} className="flex items-end gap-1">
                         <div className="w-32">
-                          <ImageUploadField name="image_url" folder="products" prefix={p.id} label="" />
+                          <ImageUploadField
+                            name="image_url"
+                            folder="products"
+                            prefix={p.id}
+                            label=""
+                            aspect={1}
+                          />
                         </div>
                         <button
                           type="submit"

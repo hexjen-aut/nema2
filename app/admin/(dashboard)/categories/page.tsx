@@ -36,7 +36,7 @@ export default async function CategoriesPage() {
           defaultValue={0}
           className="rounded-lg border border-ink/15 bg-linen px-3 py-2 text-sm"
         />
-        <ImageUploadField name="image_url" folder="categories" label="" />
+        <ImageUploadField name="image_url" folder="categories" label="" aspect={4 / 5} />
         <button
           type="submit"
           className="h-fit rounded-lg bg-clay px-4 py-2 text-sm text-card hover:bg-ink transition-colors"
@@ -90,7 +90,13 @@ export default async function CategoriesPage() {
                   {(c.products || []).length} produit(s)
                 </span>
               </div>
-              <ImageUploadField name="image_url" folder="categories" prefix={c.id} label="Changer la photo" />
+              <ImageUploadField
+                name="image_url"
+                folder="categories"
+                prefix={c.id}
+                label="Changer la photo"
+                aspect={4 / 5}
+              />
               <div className="flex items-center gap-2 pt-1">
                 <button
                   type="submit"
