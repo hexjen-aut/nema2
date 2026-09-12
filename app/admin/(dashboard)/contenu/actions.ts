@@ -5,26 +5,10 @@ import { createClient } from "@/lib/supabase/server";
 
 export async function updateSiteContent(key: string, formData: FormData) {
   const supabase = createClient();
-  const file = formData.get("image") as File | null;
-  if (!file || file.size === 0) return;
+  const imageUrl = String(formData.get("image_url") || "").trim();
+  if (!imageUrl) return;
 
-  const ext = file.name.split(".").pop() || "jpg";
-  const path = `site-content/${key}-${Date.now()}.${ext}`;
-
-  const { error: uploadError } = await supabase.storage
-    .from("nema-products")
-    .upload(path, file, { contentType: file.type, upsert: false });
-
-  if (uploadError) {
-    console.error("[updateSiteContent] erreur upload:", uploadError.message);
-    return;
-  }
-
-  const {
-    data: { publicUrl },
-  } = supabase.storage.from("nema-products").getPublicUrl(path);
-
-  await supabase.from("settings").upsert({ key, value: { image_url: publicUrl } });
+  await supabase.from("settings").upsert({ key, value: { image_url: imageUrl } });
 
   revalidatePath("/admin/contenu");
   revalidatePath("/");

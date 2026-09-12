@@ -6,6 +6,8 @@ import {
   addProductImage,
   deleteProductImage,
 } from "./actions";
+import ImageUploadField from "@/components/admin/ImageUploadField";
+import HelpTip from "@/components/admin/HelpTip";
 
 export default async function ProduitsPage() {
   const supabase = createClient();
@@ -26,7 +28,6 @@ export default async function ProduitsPage() {
 
       <form
         action={createProduct}
-        encType="multipart/form-data"
         className="mt-6 grid gap-3 rounded-2xl border border-ink/10 bg-card p-5 sm:grid-cols-2 md:grid-cols-5"
       >
         <input
@@ -74,14 +75,7 @@ export default async function ProduitsPage() {
           rows={2}
         />
         <div className="col-span-full">
-          <label className="text-sm text-ink/70">Photos (plusieurs possibles)</label>
-          <input
-            name="images"
-            type="file"
-            accept="image/*"
-            multiple
-            className="mt-1 w-full rounded-lg border border-ink/15 bg-linen px-3 py-2 text-sm"
-          />
+          <ImageUploadField name="images_url" folder="products" label="Photos (plusieurs possibles)" multiple />
         </div>
 
         {/* Tailles (optionnel à la création, jusqu'à 4 — modifiable ensuite dans /admin/prix) */}
@@ -162,27 +156,13 @@ export default async function ProduitsPage() {
                           </form>
                         </div>
                       ))}
-                      <form
-                        action={addProductImage.bind(null, p.id)}
-                        encType="multipart/form-data"
-                        className="flex items-center gap-1"
-                      >
-                        <input
-                          type="file"
-                          name="image"
-                          accept="image/*"
-                          className="hidden"
-                          id={`add-image-${p.id}`}
-                        />
-                        <label
-                          htmlFor={`add-image-${p.id}`}
-                          className="flex h-12 w-12 cursor-pointer items-center justify-center rounded-lg border border-dashed border-ink/20 text-lg text-ink/40 hover:border-clay hover:text-clay"
-                        >
-                          +
-                        </label>
+                      <form action={addProductImage.bind(null, p.id)} className="flex items-end gap-1">
+                        <div className="w-32">
+                          <ImageUploadField name="image_url" folder="products" prefix={p.id} label="" />
+                        </div>
                         <button
                           type="submit"
-                          className="rounded-full border border-ink/15 px-2 py-1 text-[10px] text-ink/50 hover:border-clay hover:text-clay"
+                          className="shrink-0 rounded-full border border-ink/15 px-2 py-1 text-[10px] text-ink/50 hover:border-clay hover:text-clay"
                         >
                           Envoyer
                         </button>
@@ -210,28 +190,34 @@ export default async function ProduitsPage() {
                   </td>
                   <td className="px-4 py-3 text-ink/60">{p.fabrication_days} j</td>
                   <td className="px-4 py-3">
-                    <form action={toggleProductActive.bind(null, p.id, !p.is_active)}>
-                      <button
-                        type="submit"
-                        className={`rounded-full px-3 py-1 text-xs ${
-                          p.is_active
-                            ? "bg-moss/15 text-moss"
-                            : "bg-ink/10 text-ink/50"
-                        }`}
-                      >
-                        {p.is_active ? "Actif" : "Masqué"}
-                      </button>
-                    </form>
+                    <div className="flex items-center gap-1.5">
+                      <form action={toggleProductActive.bind(null, p.id, !p.is_active)}>
+                        <button
+                          type="submit"
+                          className={`rounded-full px-3 py-1 text-xs ${
+                            p.is_active
+                              ? "bg-moss/15 text-moss"
+                              : "bg-ink/10 text-ink/50"
+                          }`}
+                        >
+                          {p.is_active ? "Actif" : "Masqué"}
+                        </button>
+                      </form>
+                      <HelpTip text="Actif : le produit est visible et achetable sur le site. Masqué : il reste ici dans l'admin mais disparaît du site." />
+                    </div>
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <form action={deleteProduct.bind(null, p.id)}>
-                      <button
-                        type="submit"
-                        className="text-xs text-ink/40 hover:text-red-700"
-                      >
-                        Supprimer
-                      </button>
-                    </form>
+                    <div className="flex items-center justify-end gap-1.5">
+                      <form action={deleteProduct.bind(null, p.id)}>
+                        <button
+                          type="submit"
+                          className="text-xs text-ink/40 hover:text-red-700"
+                        >
+                          Supprimer
+                        </button>
+                      </form>
+                      <HelpTip text="Supprime définitivement ce produit et ses photos. Cette action ne peut pas être annulée." />
+                    </div>
                   </td>
                 </tr>
               );

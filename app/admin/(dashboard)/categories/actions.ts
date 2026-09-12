@@ -12,30 +12,6 @@ function slugify(name: string) {
     .replace(/(^-|-$)/g, "");
 }
 
-async function uploadCategoryImage(
-  supabase: ReturnType<typeof createClient>,
-  categoryId: string,
-  file: File
-) {
-  const ext = file.name.split(".").pop() || "jpg";
-  const path = `categories/${categoryId}-${Date.now()}.${ext}`;
-
-  const { error: uploadError } = await supabase.storage
-    .from("nema-products")
-    .upload(path, file, { contentType: file.type, upsert: false });
-
-  if (uploadError) {
-    console.error("[uploadCategoryImage] erreur upload:", uploadError.message);
-    return null;
-  }
-
-  const {
-    data: { publicUrl },
-  } = supabase.storage.from("nema-products").getPublicUrl(path);
-
-  return publicUrl;
-}
-
 export async function createCategory(formData: FormData) {
   const supabase = createClient();
 
@@ -60,12 +36,9 @@ export async function createCategory(formData: FormData) {
     return;
   }
 
-  const image = formData.get("image") as File | null;
-  if (image && image.size > 0) {
-    const url = await uploadCategoryImage(supabase, category.id, image);
-    if (url) {
-      await supabase.from("categories").update({ image_url: url }).eq("id", category.id);
-    }
+  const imageUrl = String(formData.get("image_url") || "").trim();
+  if (imageUrl) {
+    await supabase.from("categories").update({ image_url: imageUrl }).eq("id", category.id);
   }
 
   revalidatePath("/admin/categories");
@@ -86,12 +59,9 @@ export async function updateCategory(categoryId: string, formData: FormData) {
     .update({ name, description, position })
     .eq("id", categoryId);
 
-  const image = formData.get("image") as File | null;
-  if (image && image.size > 0) {
-    const url = await uploadCategoryImage(supabase, categoryId, image);
-    if (url) {
-      await supabase.from("categories").update({ image_url: url }).eq("id", categoryId);
-    }
+  const imageUrl = String(formData.get("image_url") || "").trim();
+  if (imageUrl) {
+    await supabase.from("categories").update({ image_url: imageUrl }).eq("id", categoryId);
   }
 
   revalidatePath("/admin/categories");

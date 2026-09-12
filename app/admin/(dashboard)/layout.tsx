@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Logo from "@/components/Logo";
 import AdminSidebar from "@/components/admin/AdminSidebar";
+import OnboardingGuide from "@/components/admin/OnboardingGuide";
 
 const navItems = [
   { href: "/admin", label: "Tableau de bord" },
@@ -50,11 +51,14 @@ export default async function DashboardLayout({
           <p className="text-sm text-ink/60">
             Connecté : {profile?.full_name || user.email}
           </p>
-          <form action="/admin/logout" method="post">
-            <button className="text-sm text-ink/60 hover:text-clay" type="submit">
-              Déconnexion
-            </button>
-          </form>
+          <div className="flex items-center gap-4">
+            <OnboardingGuide />
+            <form action="/admin/logout" method="post">
+              <button className="text-sm text-ink/60 hover:text-clay" type="submit">
+                Déconnexion
+              </button>
+            </form>
+          </div>
         </header>
         <main className="p-6">{children}</main>
       </div>
