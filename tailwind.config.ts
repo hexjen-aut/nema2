@@ -26,6 +26,7 @@ const config: Config = {
       fontFamily: {
         display: ["var(--font-cormorant)", "serif"],
         body: ["var(--font-manrope)", "sans-serif"],
+        brand: ["var(--font-playfair)", "serif"],
       },
       maxWidth: {
         wrap: "1240px",
