@@ -42,7 +42,7 @@ export default function Creez({ images = {} }: { images?: Images }) {
                       ) : (
                         <div
                           className="flex h-full items-center justify-center px-4 text-center text-xs text-noir/35"
-                          style={stitchPattern("#F58220")}
+                          style={stitchPattern("#A9683A")}
                         >
                           Photo à ajouter depuis l'admin
                         </div>

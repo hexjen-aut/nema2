@@ -30,7 +30,7 @@ export default function Situation({ images = {} }: { images?: Images }) {
                   ) : (
                     <div
                       className="flex h-full items-center justify-center px-4 text-center text-xs text-noir/40"
-                      style={stitchPattern("#171414")}
+                      style={stitchPattern("#2B1810")}
                     >
                       Photo à ajouter depuis l'admin
                     </div>

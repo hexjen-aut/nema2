@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, Manrope } from "next/font/google";
+import { Cormorant_Garamond, Manrope, Playfair_Display } from "next/font/google";
 import "./globals.css";
 
 const cormorant = Cormorant_Garamond({
@@ -15,6 +15,14 @@ const manrope = Manrope({
   weight: ["400", "500", "600", "700"],
 });
 
+// Serif à fort contraste, proche du wordmark du logo NEMA — réservé au
+// nom de la marque (Logo).
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  variable: "--font-playfair",
+  weight: ["700", "900"],
+});
+
 export const metadata: Metadata = {
   title: "NEMA — Votre style, votre signature.",
   description:
@@ -28,7 +36,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr">
-      <body className={`${cormorant.variable} ${manrope.variable} font-body bg-ivoire text-noir`}>
+      <body
+        className={`${cormorant.variable} ${manrope.variable} ${playfair.variable} font-body bg-ivoire text-noir`}
+      >
         {children}
       </body>
     </html>

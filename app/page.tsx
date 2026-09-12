@@ -62,17 +62,26 @@ export default async function Home() {
 
       <Navbar accountHref={accountHref} />
 
-      <Hero imageUrl={content.get("hero")} />
+      <Hero
+        images={[
+          content.get("hero"),
+          content.get("hero_2"),
+          content.get("hero_3"),
+          content.get("hero_4"),
+        ]}
+      />
+
+      <ProductsGrid products={products} categories={categories || []} />
+
+      <Philosophie imageUrl={content.get("philosophie")} />
+
+      <div className="relative z-10 mx-auto max-w-wrap px-6">
+        <ChainDivider color="#A9683A" />
+      </div>
 
       <Univers />
 
-      <div className="relative z-10 mx-auto max-w-wrap px-6">
-        <ChainDivider color="#F58220" />
-      </div>
-
       <Collections categories={categories || []} />
-
-      <ProductsGrid products={products} categories={categories || []} />
 
       <Creez
         images={{
@@ -94,8 +103,6 @@ export default async function Home() {
 
       <Histoire imageUrl={content.get("histoire")} />
 
-      <Philosophie />
-
       <Situation
         images={{
           situation_look_1: content.get("situation_look_1"),
@@ -108,7 +115,7 @@ export default async function Home() {
       <Inspiration />
 
       <div className="relative z-10 mx-auto max-w-wrap px-6">
-        <ChainDivider color="#F58220" />
+        <ChainDivider color="#A9683A" />
       </div>
 
       <Avis />

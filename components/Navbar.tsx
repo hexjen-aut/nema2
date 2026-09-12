@@ -2,13 +2,19 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import Logo from "@/components/Logo";
 
 const NAV_LINKS = [
-  { href: "/#collections", label: "Collections" },
-  { href: "/#personnaliser", label: "Créer" },
+  { href: "/", label: "Accueil" },
+  { href: "/collections", label: "Collections" },
+  { href: "/personnaliser", label: "Créer" },
   { href: "/#histoire", label: "Notre histoire" },
+];
+
+const SECONDARY_LINKS = [
   { href: "/#inspiration", label: "Inspiration" },
+  { href: "/#avis", label: "Avis" },
 ];
 
 function IconSearch() {
@@ -54,6 +60,7 @@ function IconBag() {
 export default function Navbar({ accountHref }: { accountHref: string }) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     function onScroll() {
@@ -64,26 +71,45 @@ export default function Navbar({ accountHref }: { accountHref: string }) {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  function isActive(href: string) {
+    if (href === "/") return pathname === "/";
+    return href.startsWith("/#") ? false : pathname.startsWith(href);
+  }
+
   return (
     <header
       className={`sticky top-0 z-50 border-b border-noir/10 bg-ivoire/90 backdrop-blur transition-[padding] duration-300 ${
-        scrolled ? "py-2" : "py-4"
+        scrolled ? "py-1.5" : "py-3"
       }`}
     >
-      <div className="mx-auto flex max-w-wrap items-center justify-between px-6">
-        <Link href="/" aria-label="Accueil NEMA">
-          <Logo className={`transition-transform duration-300 ${scrolled ? "scale-90" : ""}`} />
-        </Link>
-
-        <nav className="hidden gap-9 text-sm md:flex">
+      <div className="mx-auto grid max-w-wrap grid-cols-[1fr_auto_1fr] items-center gap-4 px-6">
+        <nav className="hidden gap-8 text-sm md:flex">
           {NAV_LINKS.map((link) => (
-            <a key={link.label} href={link.href} className="nav-link text-noir/80 hover:text-noir">
+            <a
+              key={link.label}
+              href={link.href}
+              className={`nav-link transition-colors ${
+                isActive(link.href) ? "text-noir" : "text-noir/70 hover:text-noir"
+              }`}
+            >
               {link.label}
             </a>
           ))}
         </nav>
 
-        <div className="flex items-center gap-5">
+        <Link href="/" aria-label="Accueil NEMA" className="justify-self-center">
+          <Logo size={scrolled ? "md" : "lg"} className="transition-all duration-300" />
+        </Link>
+
+        <div className="flex items-center justify-end gap-6">
+          <nav className="hidden gap-6 text-sm text-noir/70 lg:flex">
+            {SECONDARY_LINKS.map((link) => (
+              <a key={link.label} href={link.href} className="nav-link hover:text-noir transition-colors">
+                {link.label}
+              </a>
+            ))}
+          </nav>
+
           <div className="hidden items-center gap-4 text-noir/70 sm:flex">
             <button type="button" aria-label="Rechercher" className="hover:text-orange transition-colors">
               <IconSearch />
@@ -98,13 +124,6 @@ export default function Navbar({ accountHref }: { accountHref: string }) {
               <IconBag />
             </Link>
           </div>
-
-          <Link
-            href="/personnaliser"
-            className="hidden rounded-full bg-orange px-5 py-2.5 text-sm text-ivoire transition-colors hover:bg-noir lg:inline-block"
-          >
-            Créer ma pièce
-          </Link>
 
           <button
             type="button"
@@ -126,7 +145,7 @@ export default function Navbar({ accountHref }: { accountHref: string }) {
       {mobileOpen && (
         <div className="border-t border-noir/10 bg-ivoire px-6 py-6 md:hidden">
           <nav className="flex flex-col gap-4 text-base">
-            {NAV_LINKS.map((link) => (
+            {[...NAV_LINKS, ...SECONDARY_LINKS].map((link) => (
               <a
                 key={link.label}
                 href={link.href}

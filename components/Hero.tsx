@@ -1,61 +1,37 @@
 import Reveal from "@/components/Reveal";
 import MagneticButton from "@/components/MagneticButton";
+import HeroCarousel from "@/components/HeroCarousel";
+import Logo from "@/components/Logo";
 
-export default function Hero({ imageUrl }: { imageUrl?: string | null }) {
+// Hero en plein cadre horizontal : une seule photo pleine largeur (carrousel
+// jusqu'à 4 visuels, toujours éditable en admin), marque NEMA centrée
+// dessus avec un voile pour la lisibilité.
+export default function Hero({ images }: { images: (string | null | undefined)[] }) {
   return (
-    <section className="relative overflow-hidden">
-      <div className="mx-auto grid max-w-wrap gap-12 px-6 py-20 md:grid-cols-2 md:items-center md:py-28">
-        <Reveal>
-          <p className="text-xs tracking-label text-orange">
-            NEMA — CRÉATIONS PERSONNALISABLES
+    <section className="relative min-h-[62vh] w-full overflow-hidden md:min-h-[75vh]">
+      <HeroCarousel images={images} />
+
+      <div className="absolute inset-0 bg-noir/45" />
+
+      <div className="relative z-10 flex h-full min-h-[62vh] flex-col items-center justify-center px-6 py-16 text-center md:min-h-[75vh]">
+        <Reveal className="flex flex-col items-center">
+          <Logo size="xl" tone="ivoire" />
+          <p className="mt-5 font-display text-xl italic text-ivoire/90 md:text-2xl">
+            Votre style, votre signature.
           </p>
-          <h1 className="mt-5 font-display text-5xl leading-[1.08] md:text-6xl">
-            Votre style,
-            <br />
-            votre signature.
-          </h1>
-          <p className="mt-6 max-w-md text-noir/70">
-            Des créations pensées pour vous permettre d'exprimer ce qui vous
-            rend unique — composées pièce par pièce, avec vous.
-          </p>
-          <div className="mt-9 flex flex-wrap gap-4">
+          <div className="mt-9 flex flex-wrap justify-center gap-4">
             <MagneticButton
               href="/personnaliser"
-              className="rounded-full bg-orange px-7 py-3.5 text-sm text-ivoire hover:bg-noir transition-colors"
+              className="rounded-full bg-ivoire px-7 py-3.5 text-sm text-noir hover:bg-orange hover:text-ivoire transition-colors"
             >
-              Créer ma pièce
+              Créer ma pièce →
             </MagneticButton>
             <MagneticButton
               href="#univers"
-              className="rounded-full border border-noir px-7 py-3.5 text-sm hover:bg-noir hover:text-ivoire transition-colors"
+              className="rounded-full border border-ivoire/60 px-7 py-3.5 text-sm text-ivoire hover:bg-ivoire hover:text-noir transition-colors"
             >
               Découvrir NEMA
             </MagneticButton>
-          </div>
-        </Reveal>
-
-        <Reveal delay={150}>
-          <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[28px] bg-rose">
-            {imageUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={imageUrl} alt="Une création NEMA" className="h-full w-full object-cover" />
-            ) : (
-              <>
-                <div
-                  className="absolute inset-0 animate-float"
-                  style={{
-                    backgroundImage:
-                      "repeating-radial-gradient(circle at 22% 24%, #F5822022 0, #F5822022 2px, transparent 2px, transparent 28px), repeating-radial-gradient(circle at 68% 72%, #17141414 0, #17141414 2px, transparent 2px, transparent 34px)",
-                  }}
-                />
-                <div className="absolute bottom-6 left-6 right-6 rounded-2xl bg-ivoire/90 px-5 py-4">
-                  <p className="font-display text-lg">Une création NEMA</p>
-                  <p className="text-sm text-noir/60">
-                    Photo à ajouter depuis l'admin (Contenu Home → Hero)
-                  </p>
-                </div>
-              </>
-            )}
           </div>
         </Reveal>
       </div>

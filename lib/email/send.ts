@@ -1,11 +1,12 @@
 import { getResendClient, EMAIL_FROM, ADMIN_EMAIL } from "@/lib/resend";
 
 const COLORS = {
-  ivoire: "#FFFDF9",
-  rose: "#F9E7E5",
-  orange: "#F58220",
-  noir: "#171414",
-  champagne: "#D8C3B0",
+  ivoire: "#F3E7D5",
+  card: "#F7EEE0",
+  rose: "#F1E4D6",
+  orange: "#A9683A",
+  noir: "#2B1810",
+  champagne: "#D7C6B5",
 };
 
 function wrapper(title: string, bodyHtml: string) {
@@ -15,7 +16,7 @@ function wrapper(title: string, bodyHtml: string) {
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${COLORS.ivoire};padding:32px 0;">
       <tr>
         <td align="center">
-          <table role="presentation" width="480" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:20px;overflow:hidden;border:1px solid ${COLORS.champagne};">
+          <table role="presentation" width="480" cellpadding="0" cellspacing="0" style="background:${COLORS.card};border-radius:20px;overflow:hidden;border:1px solid ${COLORS.champagne};">
             <tr>
               <td style="background:${COLORS.rose};padding:28px 32px;text-align:center;">
                 <span style="font-size:24px;letter-spacing:0.08em;color:${COLORS.orange};font-weight:bold;">NEMA</span>
