@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { sendOrderConfirmationEmail, sendAdminNewOrderEmail } from "@/lib/email/send";
 
 type SubmitOrderInput = {
   productId: string;
@@ -110,8 +111,9 @@ export async function submitOrder(input: SubmitOrderInput) {
       balance_paid: false,
       status: "nouvelle",
       comments: input.comments,
+      customer_email: user.email,
     })
-    .select("id")
+    .select("id, order_number")
     .single();
 
   if (orderError || !order) {
@@ -131,6 +133,32 @@ export async function submitOrder(input: SubmitOrderInput) {
   if (itemError) {
     console.error("[submitOrder] erreur order_items:", itemError.message);
     return { error: "Impossible d'ajouter l'article à la commande." };
+  }
+
+  // 6. Emails (confirmation client + notification admin) — ne bloquent jamais la commande.
+  try {
+    const [{ data: product }, { data: profile }] = await Promise.all([
+      supabase.from("products").select("name").eq("id", input.productId).single(),
+      supabase.from("profiles").select("full_name").eq("id", user.id).single(),
+    ]);
+    const productName = product?.name || "votre création";
+
+    if (user.email) {
+      await sendOrderConfirmationEmail({
+        to: user.email,
+        orderNumber: order.order_number,
+        productName,
+        totalAmount,
+      });
+    }
+    await sendAdminNewOrderEmail({
+      orderNumber: order.order_number,
+      customerName: profile?.full_name || null,
+      productName,
+      totalAmount,
+    });
+  } catch (emailError) {
+    console.error("[submitOrder] erreur envoi email:", emailError);
   }
 
   redirect("/compte/mes-commandes");

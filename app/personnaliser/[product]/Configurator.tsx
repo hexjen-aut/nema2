@@ -256,7 +256,7 @@ export default function Configurator({ product }: { product: Product }) {
   }
 
   return (
-    <div className="min-h-screen bg-ivoire">
+    <div className="min-h-screen bg-nema-motif">
       {/* Barre supérieure */}
       <header className="sticky top-0 z-40 border-b border-noir/10 bg-ivoire/95 px-6 py-4 backdrop-blur">
         <div className="mx-auto flex max-w-[1400px] items-center justify-between">

@@ -32,7 +32,7 @@ const columns = [
   {
     title: "AIDE",
     links: [
-      { label: "Contact", href: "#" },
+      { label: "Contact", href: "/contact" },
       { label: "FAQ", href: "#" },
       { label: "Livraison", href: "#" },
       { label: "Retours", href: "#" },

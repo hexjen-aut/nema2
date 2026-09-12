@@ -57,7 +57,7 @@ export default async function Home() {
   }));
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-ivoire text-noir">
+    <main className="relative min-h-screen overflow-hidden bg-nema-motif text-noir">
       <CursorGlow />
 
       <Navbar accountHref={accountHref} />
