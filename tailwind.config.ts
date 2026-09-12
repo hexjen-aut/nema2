@@ -5,8 +5,10 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Palette NEMA — cuivre / bronze / beige (identité 2026)
-        ivoire: "#FBF6EF",
+        // Palette NEMA — cuivre / bronze / beige (identité 2026). Pas de
+        // blanc pur sur le site : "ivoire" et "card" restent dans la
+        // famille beige, comme la section Atelier.
+        ivoire: "#F3E7D5",
         rose: "#F1E4D6",
         orange: "#A9683A",
         noir: "#2B1810",
@@ -14,8 +16,8 @@ const config: Config = {
 
         // Alias vers les anciens tokens, le temps de migrer chaque page.
         // À supprimer une fois admin/compte/configurateur repris.
-        linen: "#FBF6EF", // -> ivoire
-        card: "#FFFFFF",
+        linen: "#F3E7D5", // -> ivoire
+        card: "#F7EEE0",
         ink: "#2B1810", // -> noir
         clay: "#A9683A", // -> orange
         gold: "#D7C6B5", // -> champagne

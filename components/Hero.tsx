@@ -1,78 +1,90 @@
 import Reveal from "@/components/Reveal";
 import MagneticButton from "@/components/MagneticButton";
 
-// Hero plein cadre : la photo (éditable en admin) occupe tout l'espace,
-// le texte de marque est posé dessus avec un voile dégradé pour la lisibilité.
+// Fin motif décoratif "branches" en lignes fines, posé derrière le texte —
+// écho discret du crochet/de la nature, dans le ton cuivre du logo.
+function LineArtAccent() {
+  return (
+    <svg
+      viewBox="0 0 420 560"
+      aria-hidden="true"
+      className="pointer-events-none absolute -left-16 -top-10 h-[130%] w-auto opacity-[0.22] md:opacity-30"
+    >
+      <g fill="none" stroke="#A9683A" strokeWidth="1.3" strokeLinecap="round">
+        <path d="M20 540 C60 420 30 300 90 220 C130 168 110 90 150 20" />
+        <path d="M90 220 C140 210 170 170 220 160" />
+        <path d="M60 340 C110 335 140 300 190 288" />
+        <path d="M40 460 C90 452 120 420 170 410" />
+        <path d="M150 20 C170 55 200 60 220 95" />
+      </g>
+    </svg>
+  );
+}
+
+// Hero en duo : panneau beige (texte de marque, aligné à gauche) + photo en
+// plein cadre (toujours éditable en admin) sur le second volet.
 export default function Hero({ imageUrl }: { imageUrl?: string | null }) {
   return (
     <section className="relative overflow-hidden">
-      <div className="relative min-h-[78vh] w-full md:min-h-[88vh]">
-        {imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={imageUrl}
-            alt="Une création NEMA"
-            className="absolute inset-0 h-full w-full object-cover"
-          />
-        ) : (
-          <div
-            className="absolute inset-0 animate-float bg-rose"
-            style={{
-              backgroundImage:
-                "repeating-radial-gradient(circle at 22% 24%, #A9683A22 0, #A9683A22 2px, transparent 2px, transparent 28px), repeating-radial-gradient(circle at 68% 72%, #2B181014 0, #2B181014 2px, transparent 2px, transparent 34px)",
-            }}
-          />
-        )}
-
-        {/* Voile pour la lisibilité du texte centré : plus sombre au centre, plus léger sur les bords */}
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "radial-gradient(ellipse at center, rgba(43,24,16,0.55) 0%, rgba(43,24,16,0.62) 45%, rgba(43,24,16,0.4) 75%, rgba(43,24,16,0.28) 100%)",
-          }}
-        />
-
-        <div className="relative z-10 flex h-full min-h-[78vh] items-center justify-center text-center md:min-h-[88vh]">
-          <div className="mx-auto w-full max-w-wrap px-6 py-20">
-            <Reveal>
-              <p className="text-xs tracking-label text-champagne">
-                NEMA — CRÉATIONS PERSONNALISABLES
-              </p>
-              <h1 className="mx-auto mt-5 max-w-2xl font-display text-5xl leading-[1.08] text-ivoire md:text-7xl">
-                Votre style,
-                <br />
-                votre signature.
-              </h1>
-              <p className="mx-auto mt-6 max-w-md text-ivoire/80">
-                Des créations pensées pour vous permettre d'exprimer ce qui
-                vous rend unique — composées pièce par pièce, avec vous.
-              </p>
-              <div className="mt-9 flex flex-wrap justify-center gap-4">
-                <MagneticButton
-                  href="/personnaliser"
-                  className="rounded-full bg-orange px-7 py-3.5 text-sm text-ivoire hover:bg-ivoire hover:text-noir transition-colors"
-                >
-                  Créer ma pièce
-                </MagneticButton>
-                <MagneticButton
-                  href="#univers"
-                  className="rounded-full border border-ivoire/70 px-7 py-3.5 text-sm text-ivoire hover:bg-ivoire hover:text-noir transition-colors"
-                >
-                  Découvrir NEMA
-                </MagneticButton>
-              </div>
-            </Reveal>
-          </div>
+      <div className="grid min-h-[70vh] w-full md:min-h-[80vh] md:grid-cols-2">
+        <div className="bg-nema-motif relative flex items-center overflow-hidden px-6 py-16 md:px-14 lg:px-20">
+          <LineArtAccent />
+          <Reveal className="relative z-10">
+            <p className="text-xs tracking-label text-orange">
+              MAISON DE CRÉATIONS PERSONNALISABLES
+            </p>
+            <h1 className="mt-5 max-w-md font-display text-5xl leading-[1.1] text-noir md:text-6xl">
+              Votre style,
+              <br />
+              <em className="italic">votre signature.</em>
+            </h1>
+            <p className="mt-6 max-w-sm text-noir/70">
+              Des créations pensées pour vous, composées avec soin et
+              personnalisées selon votre univers.
+            </p>
+            <div className="mt-9 flex flex-wrap gap-4">
+              <MagneticButton
+                href="/personnaliser"
+                className="rounded-full bg-noir px-7 py-3.5 text-sm text-ivoire hover:bg-orange transition-colors"
+              >
+                Créer ma pièce →
+              </MagneticButton>
+              <MagneticButton
+                href="#univers"
+                className="rounded-full border border-noir/60 px-7 py-3.5 text-sm text-noir hover:bg-noir hover:text-ivoire transition-colors"
+              >
+                Découvrir NEMA
+              </MagneticButton>
+            </div>
+          </Reveal>
         </div>
 
-        {!imageUrl && (
-          <div className="absolute bottom-6 right-6 z-10 rounded-2xl bg-ivoire/90 px-5 py-4">
-            <p className="text-sm text-noir/60">
-              Photo à ajouter depuis l'admin (Contenu Home → Hero)
-            </p>
-          </div>
-        )}
+        <div className="relative min-h-[50vh] overflow-hidden md:min-h-0">
+          {imageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={imageUrl}
+              alt="Une création NEMA"
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+          ) : (
+            <div
+              className="absolute inset-0 animate-float bg-rose"
+              style={{
+                backgroundImage:
+                  "repeating-radial-gradient(circle at 22% 24%, #A9683A22 0, #A9683A22 2px, transparent 2px, transparent 28px), repeating-radial-gradient(circle at 68% 72%, #2B181014 0, #2B181014 2px, transparent 2px, transparent 34px)",
+              }}
+            />
+          )}
+
+          {!imageUrl && (
+            <div className="absolute bottom-6 right-6 rounded-2xl bg-card/90 px-5 py-4">
+              <p className="text-sm text-noir/60">
+                Photo à ajouter depuis l'admin (Contenu Home → Hero)
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </section>
   );
