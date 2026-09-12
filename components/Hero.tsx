@@ -1,5 +1,6 @@
 import Reveal from "@/components/Reveal";
 import MagneticButton from "@/components/MagneticButton";
+import HeroCarousel from "@/components/HeroCarousel";
 
 // Fin motif décoratif "branches" en lignes fines, posé derrière le texte —
 // écho discret du crochet/de la nature, dans le ton cuivre du logo.
@@ -23,7 +24,7 @@ function LineArtAccent() {
 
 // Hero en duo : panneau beige (texte de marque, aligné à gauche) + photo en
 // plein cadre (toujours éditable en admin) sur le second volet.
-export default function Hero({ imageUrl }: { imageUrl?: string | null }) {
+export default function Hero({ images }: { images: (string | null | undefined)[] }) {
   return (
     <section className="relative overflow-hidden">
       <div className="grid min-h-[70vh] w-full md:min-h-[80vh] md:grid-cols-2">
@@ -59,32 +60,7 @@ export default function Hero({ imageUrl }: { imageUrl?: string | null }) {
           </Reveal>
         </div>
 
-        <div className="relative min-h-[50vh] overflow-hidden md:min-h-0">
-          {imageUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={imageUrl}
-              alt="Une création NEMA"
-              className="absolute inset-0 h-full w-full object-cover"
-            />
-          ) : (
-            <div
-              className="absolute inset-0 animate-float bg-rose"
-              style={{
-                backgroundImage:
-                  "repeating-radial-gradient(circle at 22% 24%, #A9683A22 0, #A9683A22 2px, transparent 2px, transparent 28px), repeating-radial-gradient(circle at 68% 72%, #2B181014 0, #2B181014 2px, transparent 2px, transparent 34px)",
-              }}
-            />
-          )}
-
-          {!imageUrl && (
-            <div className="absolute bottom-6 right-6 rounded-2xl bg-card/90 px-5 py-4">
-              <p className="text-sm text-noir/60">
-                Photo à ajouter depuis l'admin (Contenu Home → Hero)
-              </p>
-            </div>
-          )}
-        </div>
+        <HeroCarousel images={images} />
       </div>
     </section>
   );

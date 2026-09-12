@@ -62,7 +62,14 @@ export default async function Home() {
 
       <Navbar accountHref={accountHref} />
 
-      <Hero imageUrl={content.get("hero")} />
+      <Hero
+        images={[
+          content.get("hero"),
+          content.get("hero_2"),
+          content.get("hero_3"),
+          content.get("hero_4"),
+        ]}
+      />
 
       <ProductsGrid products={products} categories={categories || []} />
 
