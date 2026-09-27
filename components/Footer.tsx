@@ -36,8 +36,9 @@ const columns = [
       { label: "FAQ", href: "#" },
       { label: "Livraison", href: "#" },
       { label: "Retours", href: "#" },
-      { label: "Conditions", href: "#" },
-      { label: "Confidentialité", href: "#" },
+      { label: "CGV", href: "/cgv" },
+      { label: "Mentions légales", href: "/mentions-legales" },
+      { label: "Confidentialité", href: "/confidentialite" },
     ],
   },
 ];
